@@ -35,7 +35,7 @@
     
     <style>
         html {
-            /* 微調為極為舒適適中的字體大小 (16.5px) */
+            /* 舒適適中的字體大小 (16.5px) */
             font-size: 16.5px;
         }
         body {
@@ -155,7 +155,7 @@ service cloud.firestore {
             <!-- Real-time Keyword Search Bar -->
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
-                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜尋曲名、大類別、小類別或標籤 (例如：卡農、鋼琴、二胡...)" 
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜尋曲名、大類別或小類別 (例如：卡農、鋼琴、二胡...)" 
                     class="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition text-base font-medium">
                 <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 text-base">
                     <i class="fa-solid fa-xmark"></i>
@@ -214,9 +214,9 @@ service cloud.firestore {
 
         <!-- Skeleton Loading Loader -->
         <div id="skeletonLoader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div class="h-52 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
-            <div class="h-52 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
-            <div class="h-52 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
         </div>
 
         <!-- Scores Grid -->
@@ -329,16 +329,11 @@ service cloud.firestore {
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">樂譜小類別 <span class="text-rose-500">*</span></label>
-                        <select id="addSubCategory" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">樂譜小類別</label>
+                        <select id="addSubCategory" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">風格標籤</label>
-                    <input type="text" id="addTags" placeholder="古典, 婚禮 (逗號分開)" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
                 </div>
 
                 <div>
@@ -390,16 +385,11 @@ service cloud.firestore {
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">樂譜小類別 <span class="text-rose-500">*</span></label>
-                        <select id="editSubCategory" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">樂譜小類別</label>
+                        <select id="editSubCategory" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">風格標籤</label>
-                    <input type="text" id="editTags" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
 
                 <div>
@@ -608,7 +598,6 @@ service cloud.firestore {
                 mainCategory: "鍵盤樂器",
                 subCategory: "鋼琴",
                 instrument: "鋼琴",
-                tags: ["古典", "婚禮", "獨奏"],
                 driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view",
                 youtubeUrl: "https://www.youtube.com/watch?v=NlprozGcs80"
             },
@@ -617,7 +606,6 @@ service cloud.firestore {
                 mainCategory: "弦樂器",
                 subCategory: "小提琴",
                 instrument: "小提琴",
-                tags: ["宮崎駿", "動漫", "名曲"],
                 driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view",
                 youtubeUrl: "https://www.youtube.com/watch?v=132XfUQLUvA"
             },
@@ -626,7 +614,6 @@ service cloud.firestore {
                 mainCategory: "彈撥樂器",
                 subCategory: "吉他",
                 instrument: "吉他",
-                tags: ["古典", "抒情"],
                 driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view",
                 youtubeUrl: ""
             }
@@ -642,8 +629,7 @@ service cloud.firestore {
             { name: "長笛", parentName: "管樂器" },
             { name: "薩克斯風", parentName: "管樂器" },
             { name: "二胡", parentName: "傳統樂器" },
-            { name: "古箏", parentName: "傳統樂器" },
-            { name: "其他", parentName: "其他" }
+            { name: "古箏", parentName: "傳統樂器" }
         ];
 
         let syncInitialized = false;
@@ -1064,13 +1050,11 @@ service cloud.firestore {
 
             mainContainer.innerHTML = mainHtml;
 
-            // 2. Render Sub Categories (Tier 2) - Only show when a specific Main Category is selected
+            // 2. Render Sub Categories (Tier 2) - Only show when a specific Main Category is selected and has subs
             if (activeMainCategory === 'ALL') {
                 if (subSection) subSection.classList.add('hidden');
                 subContainer.innerHTML = '';
             } else {
-                if (subSection) subSection.classList.remove('hidden');
-
                 const selectedMainObj = mainCategories.find(m => m.name === activeMainCategory);
                 let visibleSubCats = [];
                 if (selectedMainObj) {
@@ -1079,55 +1063,62 @@ service cloud.firestore {
                     visibleSubCats = subCategories.filter(s => s.parentName === activeMainCategory);
                 }
 
-                let subHtml = `
-                    <button onclick="setSubCategoryFilter('ALL')" class="px-3.5 py-1 rounded-xl text-xs font-bold transition ${
-                        activeSubCategory === 'ALL' 
-                        ? 'bg-indigo-600 text-white shadow-sm font-bold' 
-                        : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                    }">
-                        全部小類
-                    </button>
-                `;
-
-                if (!isAdmin) {
-                    subHtml += visibleSubCats.map(cat => {
-                        const isActive = activeSubCategory === cat.name;
-                        return `
-                            <button onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="px-3.5 py-1 rounded-xl text-xs font-bold transition ${
-                                isActive 
-                                ? 'bg-indigo-600 text-white shadow-sm font-bold' 
-                                : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                            }">
-                                ${cat.name}
-                            </button>
-                        `;
-                    }).join('');
+                if (visibleSubCats.length === 0) {
+                    if (subSection) subSection.classList.add('hidden');
+                    subContainer.innerHTML = '';
                 } else {
-                    subHtml += visibleSubCats.map(cat => {
-                        const isActive = activeSubCategory === cat.name;
-                        return `
-                            <div draggable="true" 
-                                 ondragstart="handleCatDragStart(event, '${cat.id}')"
-                                 ondragover="handleCatDragOver(event)"
-                                 ondrop="handleCatDrop(event, '${cat.id}', 'sub')"
-                                 ondragend="handleCatDragEnd(event)"
-                                 class="group relative inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold cursor-grab active:cursor-grabbing border ${
-                                     isActive 
-                                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm font-bold' 
-                                     : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                 }">
-                                <i class="fa-solid fa-grip-vertical text-xs opacity-40 group-hover:opacity-100 transition"></i>
-                                <span onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
-                                <button onclick="event.stopPropagation(); promptDeleteCategory('${cat.id}', '${escapeQuotes(cat.name)}', '小類別')" 
-                                        class="ml-0.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition p-0.5" title="刪除此小類別">
-                                    <i class="fa-solid fa-xmark text-xs"></i>
-                                </button>
-                            </div>
-                        `;
-                    }).join('');
-                }
+                    if (subSection) subSection.classList.remove('hidden');
 
-                subContainer.innerHTML = subHtml;
+                    let subHtml = `
+                        <button onclick="setSubCategoryFilter('ALL')" class="px-3.5 py-1 rounded-xl text-xs font-bold transition ${
+                            activeSubCategory === 'ALL' 
+                            ? 'bg-indigo-600 text-white shadow-sm font-bold' 
+                            : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }">
+                            全部小類
+                        </button>
+                    `;
+
+                    if (!isAdmin) {
+                        subHtml += visibleSubCats.map(cat => {
+                            const isActive = activeSubCategory === cat.name;
+                            return `
+                                <button onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="px-3.5 py-1 rounded-xl text-xs font-bold transition ${
+                                    isActive 
+                                    ? 'bg-indigo-600 text-white shadow-sm font-bold' 
+                                    : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                }">
+                                    ${cat.name}
+                                </button>
+                            `;
+                        }).join('');
+                    } else {
+                        subHtml += visibleSubCats.map(cat => {
+                            const isActive = activeSubCategory === cat.name;
+                            return `
+                                <div draggable="true" 
+                                     ondragstart="handleCatDragStart(event, '${cat.id}')"
+                                     ondragover="handleCatDragOver(event)"
+                                     ondrop="handleCatDrop(event, '${cat.id}', 'sub')"
+                                     ondragend="handleCatDragEnd(event)"
+                                     class="group relative inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold cursor-grab active:cursor-grabbing border ${
+                                         isActive 
+                                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm font-bold' 
+                                         : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                     }">
+                                    <i class="fa-solid fa-grip-vertical text-xs opacity-40 group-hover:opacity-100 transition"></i>
+                                    <span onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
+                                    <button onclick="event.stopPropagation(); promptDeleteCategory('${cat.id}', '${escapeQuotes(cat.name)}', '小類別')" 
+                                            class="ml-0.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition p-0.5" title="刪除此小類別">
+                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                    </button>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+
+                    subContainer.innerHTML = subHtml;
+                }
             }
         }
         window.renderCategoryFilters = renderCategoryFilters;
@@ -1261,8 +1252,10 @@ service cloud.firestore {
             }
 
             if (subs.length === 0) {
-                addSubSel.innerHTML = `<option value="通用">通用</option>`;
+                addSubSel.innerHTML = `<option value="">(無小類別)</option>`;
+                addSubSel.disabled = true;
             } else {
+                addSubSel.disabled = false;
                 addSubSel.innerHTML = subs.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
             }
         }
@@ -1282,8 +1275,10 @@ service cloud.firestore {
             }
 
             if (subs.length === 0) {
-                editSubSel.innerHTML = `<option value="通用">通用</option>`;
+                editSubSel.innerHTML = `<option value="">(無小類別)</option>`;
+                editSubSel.disabled = true;
             } else {
+                editSubSel.disabled = false;
                 editSubSel.innerHTML = subs.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
             }
 
@@ -1307,8 +1302,7 @@ service cloud.firestore {
                     (s.title && s.title.toLowerCase().includes(q)) ||
                     (s.mainCategory && s.mainCategory.toLowerCase().includes(q)) ||
                     (s.subCategory && s.subCategory.toLowerCase().includes(q)) ||
-                    (s.instrument && s.instrument.toLowerCase().includes(q)) ||
-                    (s.tags && s.tags.some(t => t.toLowerCase().includes(q)));
+                    (s.instrument && s.instrument.toLowerCase().includes(q));
 
                 const matchMain = activeMainCategory === 'ALL' || 
                     s.mainCategory === activeMainCategory || 
@@ -1333,17 +1327,20 @@ service cloud.firestore {
 
             grid.innerHTML = filtered.map(s => {
                 const links = convertDriveUrl(s.driveUrl);
-                const displayCategory = s.mainCategory 
-                    ? `${s.mainCategory} ‧ ${s.subCategory || '通用'}` 
-                    : (s.instrument || '未指定');
+                
+                // 無小類別、通用或選空時，只顯示大類別
+                const hasValidSub = s.subCategory && s.subCategory !== '通用' && s.subCategory !== '(無小類別)' && s.subCategory !== '無';
+                const displayCategory = hasValidSub 
+                    ? `${s.mainCategory} ‧ ${s.subCategory}` 
+                    : (s.mainCategory || s.instrument || '未指定');
 
                 const hasYoutube = s.youtubeUrl && extractYoutubeId(s.youtubeUrl);
 
                 return `
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
                         <div>
-                            <div class="flex items-center justify-between mb-2.5">
-                                <span class="text-xs font-bold px-2 py-0.5 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/50">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/50">
                                     ${displayCategory}
                                 </span>
                                 ${isAdmin ? `
@@ -1358,13 +1355,9 @@ service cloud.firestore {
                                 ` : ''}
                             </div>
 
-                            <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition mb-2.5 line-clamp-1">
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition mb-4 line-clamp-2">
                                 ${s.title}
                             </h3>
-
-                            <div class="flex flex-wrap gap-1 mb-4">
-                                ${(s.tags || []).map(t => `<span class="text-xs px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 font-medium">#${t}</span>`).join('')}
-                            </div>
                         </div>
 
                         <div class="pt-3.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-2 flex-wrap sm:flex-nowrap">
@@ -1684,19 +1677,15 @@ service cloud.firestore {
 
             const title = document.getElementById('addTitle').value.trim();
             const mainCategory = document.getElementById('addMainCategory').value;
-            const subCategory = document.getElementById('addSubCategory').value;
-            const tagsRaw = document.getElementById('addTags').value;
+            const subCategory = document.getElementById('addSubCategory').value || '';
             const driveUrl = document.getElementById('addDriveUrl').value.trim();
             const youtubeUrl = document.getElementById('addYoutubeUrl').value.trim();
-
-            const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [subCategory];
 
             const success = await window.firebaseAddScore({
                 title,
                 mainCategory,
                 subCategory,
-                instrument: subCategory,
-                tags,
+                instrument: subCategory || mainCategory,
                 driveUrl,
                 youtubeUrl
             });
@@ -1719,7 +1708,6 @@ service cloud.firestore {
 
             document.getElementById('editScoreId').value = score.id;
             document.getElementById('editTitle').value = score.title || '';
-            document.getElementById('editTags').value = (score.tags || []).join(', ');
             document.getElementById('editDriveUrl').value = score.driveUrl || '';
             document.getElementById('editYoutubeUrl').value = score.youtubeUrl || '';
 
@@ -1760,19 +1748,15 @@ service cloud.firestore {
             const id = document.getElementById('editScoreId').value;
             const title = document.getElementById('editTitle').value.trim();
             const mainCategory = document.getElementById('editMainCategory').value;
-            const subCategory = document.getElementById('editSubCategory').value;
-            const tagsRaw = document.getElementById('editTags').value;
+            const subCategory = document.getElementById('editSubCategory').value || '';
             const driveUrl = document.getElementById('editDriveUrl').value.trim();
-            const youtubeUrl = document.getElementById('addYoutubeUrl') ? document.getElementById('editYoutubeUrl').value.trim() : '';
-
-            const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [subCategory];
+            const youtubeUrl = document.getElementById('editYoutubeUrl').value.trim();
 
             const success = await window.firebaseUpdateScore(id, {
                 title,
                 mainCategory,
                 subCategory,
-                instrument: subCategory,
-                tags,
+                instrument: subCategory || mainCategory,
                 driveUrl,
                 youtubeUrl
             });
