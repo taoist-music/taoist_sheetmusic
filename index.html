@@ -65,7 +65,7 @@
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
 
-    <!-- Firebase Rules Warning Modal (Shown if permission denied) -->
+    <!-- Firebase Rules Warning Modal -->
     <div id="rulesWarningModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div class="flex items-center space-x-3 text-amber-500">
@@ -146,39 +146,64 @@ service cloud.firestore {
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         
         <!-- Search & Filter Controls -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-700/80 mb-8 space-y-5">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-700/80 mb-8 space-y-6">
             
             <!-- Real-time Keyword Search Bar -->
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜尋曲名、作曲家、分類或標籤 (例如：卡農、鋼琴、久石讓...)" 
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜尋曲名、作曲家、大類別、小類別或標籤 (例如：卡農、鋼琴、二胡...)" 
                     class="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition text-sm">
                 <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <!-- Category Filter Buttons -->
-            <div class="space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">樂譜分類</span>
-                    <div class="flex items-center space-x-3">
-                        <button id="addCategoryBtn" onclick="openAddCategoryModal()" class="hidden text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
-                            <i class="fa-solid fa-folder-plus"></i> 新增分類
-                        </button>
-                        <button onclick="resetFilters()" class="text-xs text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
-                            <i class="fa-solid fa-rotate-left"></i> 重設條件
-                        </button>
+            <!-- Two-Tier Hierarchical Category Filters -->
+            <div class="space-y-4">
+                <!-- Tier 1: Main Categories Header & Pills -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-tree text-sky-500"></i>
+                            <span>樂譜大類別</span>
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <div id="adminCatActions" class="hidden flex items-center space-x-2">
+                                <button onclick="openAddMainCategoryModal()" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+                                    <i class="fa-solid fa-folder-plus"></i> 新增大類別
+                                </button>
+                                <span class="text-slate-300 dark:text-slate-700">|</span>
+                                <button onclick="openAddSubCategoryModal()" class="text-xs text-sky-600 dark:text-sky-400 font-semibold hover:underline flex items-center gap-1">
+                                    <i class="fa-solid fa-square-plus"></i> 新增小類別
+                                </button>
+                            </div>
+                            <button onclick="resetFilters()" class="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:underline flex items-center gap-1 ml-2">
+                                <i class="fa-solid fa-rotate-left"></i> 重設條件
+                            </button>
+                        </div>
+                    </div>
+                    <div id="mainCategoryContainer" class="flex flex-wrap gap-2">
+                        <!-- Main Category Pills -->
                     </div>
                 </div>
-                <div id="instrumentContainer" class="flex flex-wrap gap-2">
-                    <!-- Dynamic instrument pills -->
+
+                <!-- Tier 2: Sub Categories Header & Pills (Initially Hidden) -->
+                <div id="subCategorySection" class="hidden pt-3 border-t border-slate-100 dark:border-slate-700/60">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-tags text-indigo-400"></i>
+                            <span>樂譜小類別</span>
+                        </span>
+                    </div>
+                    <div id="subCategoryContainer" class="flex flex-wrap gap-2">
+                        <!-- Sub Category Pills -->
+                    </div>
                 </div>
             </div>
 
-            <div class="pt-2 flex justify-end">
+            <div class="pt-2 flex justify-end border-t border-slate-100 dark:border-slate-700/40">
                 <div class="text-xs text-slate-400">
-                    目前展示：<span id="resultCountBadge" class="font-bold text-sky-600 dark:text-sky-400">0</span> 首
+                    目前展示：<span id="resultCountBadge" class="font-bold text-sky-600 dark:text-sky-400">0</span> 首樂譜
                 </div>
             </div>
         </div>
@@ -211,7 +236,7 @@ service cloud.firestore {
     <!-- Footer -->
     <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div>道樂樂譜閱覽器 &copy; Firebase 實時同步版本</div>
+            <div>道樂樂譜閱覽器 &copy; Firebase 實時同步雙層分類版</div>
             <div>託管於 Google Drive 雲端架構</div>
         </div>
     </footer>
@@ -267,14 +292,22 @@ service cloud.firestore {
                     <input type="text" id="addTitle" required placeholder="例如：卡農 (Canon in D)" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
                 </div>
 
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">作曲家</label>
+                    <input type="text" id="addComposer" placeholder="例如：Pachelbel" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                </div>
+
+                <!-- Hierarchical Category Selectors -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">作曲家</label>
-                        <input type="text" id="addComposer" placeholder="例如：Pachelbel" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">樂譜大類別 <span class="text-rose-500">*</span></label>
+                        <select id="addMainCategory" required onchange="handleAddMainCategoryChange()" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">樂譜分類 <span class="text-rose-500">*</span></label>
-                        <select id="addInstrument" required class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">樂譜小類別 <span class="text-rose-500">*</span></label>
+                        <select id="addSubCategory" required class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
@@ -300,7 +333,7 @@ service cloud.firestore {
         </div>
     </div>
 
-    <!-- 3. Delete Confirmation Custom Modal -->
+    <!-- 3. Delete Score Confirmation Modal -->
     <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
             <div class="w-12 h-12 bg-rose-100 dark:bg-rose-950/50 text-rose-500 rounded-full flex items-center justify-center mx-auto text-xl">
@@ -346,32 +379,63 @@ service cloud.firestore {
         </div>
     </div>
 
-    <!-- 5. Add Category Modal -->
-    <div id="addCategoryModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <!-- 5. Add Main Category Modal -->
+    <div id="addMainCategoryModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
                 <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <i class="fa-solid fa-folder-plus text-indigo-500"></i>
-                    <span>新增樂譜分類</span>
+                    <span>新增樂譜「大類別」</span>
                 </h3>
-                <button onclick="closeAddCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <button onclick="closeAddMainCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <form onsubmit="handleAddCategorySubmit(event)" class="space-y-4">
+            <form onsubmit="handleAddMainCategorySubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">新樂譜分類名稱</label>
-                    <input type="text" id="newCategoryInput" required placeholder="例如：二胡、合唱、烏克麗麗..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">大類別名稱</label>
+                    <input type="text" id="newMainCategoryInput" required placeholder="例如：鍵盤樂器、拉弦樂器、合奏..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div class="pt-2 flex justify-end space-x-2">
-                    <button type="button" onclick="closeAddCategoryModal()" class="px-4 py-2 text-xs font-medium text-slate-500">取消</button>
-                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-xl shadow-md transition">新增分類</button>
+                    <button type="button" onclick="closeAddMainCategoryModal()" class="px-4 py-2 text-xs font-medium text-slate-500">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-xl shadow-md transition">新增大類別</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 6. Delete Category Confirmation Modal -->
+    <!-- 6. Add Sub Category Modal -->
+    <div id="addSubCategoryModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-square-plus text-sky-500"></i>
+                    <span>新增樂譜「小類別」</span>
+                </h3>
+                <button onclick="closeAddSubCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form onsubmit="handleAddSubCategorySubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">所屬大類別</label>
+                    <select id="parentMainCategorySelect" required class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                        <!-- Dynamic options -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">小類別名稱</label>
+                    <input type="text" id="newSubCategoryInput" required placeholder="例如：鋼琴、二胡、長笛..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeAddSubCategoryModal()" class="px-4 py-2 text-xs font-medium text-slate-500">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-medium rounded-xl shadow-md transition">新增小類別</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 7. Delete Category Confirmation Modal -->
     <div id="deleteCategoryConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
             <div class="w-12 h-12 bg-rose-100 dark:bg-rose-950/50 text-rose-500 rounded-full flex items-center justify-center mx-auto text-xl">
@@ -392,7 +456,7 @@ service cloud.firestore {
         </div>
     </div>
 
-    <!-- 7. Change Password Modal -->
+    <!-- 8. Change Password Modal -->
     <div id="changePasswordModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
@@ -453,6 +517,8 @@ service cloud.firestore {
             {
                 title: "卡農 (Canon in D)",
                 composer: "Pachelbel",
+                mainCategory: "鍵盤樂器",
+                subCategory: "鋼琴",
                 instrument: "鋼琴",
                 tags: ["古典", "婚禮", "獨奏"],
                 driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view"
@@ -460,6 +526,8 @@ service cloud.firestore {
             {
                 title: "天空之城 (Carrying You)",
                 composer: "久石讓",
+                mainCategory: "弦樂器",
+                subCategory: "小提琴",
                 instrument: "小提琴",
                 tags: ["宮崎駿", "動漫", "名曲"],
                 driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view"
@@ -467,13 +535,27 @@ service cloud.firestore {
             {
                 title: "愛的羅曼史 (Romance)",
                 composer: "Spanish Folk",
+                mainCategory: "彈撥樂器",
+                subCategory: "吉他",
                 instrument: "吉他",
                 tags: ["古典", "抒情"],
                 driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view"
             }
         ];
 
-        const defaultCategories = ['鋼琴', '小提琴', '吉他', '長笛', '薩克斯風', '其他'];
+        // Seed default categories structure if empty
+        const defaultMainCats = ["鍵盤樂器", "弦樂器", "管樂器", "傳統樂器", "其他"];
+        const defaultSubCats = [
+            { name: "鋼琴", parentName: "鍵盤樂器" },
+            { name: "電子琴", parentName: "鍵盤樂器" },
+            { name: "小提琴", parentName: "弦樂器" },
+            { name: "吉他", parentName: "弦樂器" },
+            { name: "長笛", parentName: "管樂器" },
+            { name: "薩克斯風", parentName: "管樂器" },
+            { name: "二胡", parentName: "傳統樂器" },
+            { name: "古箏", parentName: "傳統樂器" },
+            { name: "其他", parentName: "其他" }
+        ];
 
         let syncInitialized = false;
 
@@ -502,7 +584,7 @@ service cloud.firestore {
                     if (err.code === 'auth/operation-not-allowed') {
                         syncBadge.innerHTML = `
                             <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                            <span class="text-amber-600 dark:text-amber-400 font-medium">請至 Firebase Console 開啟「匿名驗證」</span>
+                            <span class="text-amber-600 dark:text-amber-400 font-medium">請至 Console 開啟「匿名驗證」</span>
                         `;
                     } else {
                         syncBadge.innerHTML = `
@@ -567,30 +649,60 @@ service cloud.firestore {
             onSnapshot(categoriesCollectionRef, async (snapshot) => {
                 if (snapshot.empty && !hasSeededCategories) {
                     hasSeededCategories = true;
-                    for (let i = 0; i < defaultCategories.length; i++) {
-                        await addDoc(categoriesCollectionRef, { name: defaultCategories[i], order: i, createdAt: Date.now() });
+                    // Seed Main Categories
+                    const mainIdMap = {};
+                    for (let i = 0; i < defaultMainCats.length; i++) {
+                        const name = defaultMainCats[i];
+                        const docRef = await addDoc(categoriesCollectionRef, {
+                            name: name,
+                            parentId: null,
+                            order: i,
+                            createdAt: Date.now()
+                        });
+                        mainIdMap[name] = docRef.id;
+                    }
+                    // Seed Sub Categories
+                    for (let j = 0; j < defaultSubCats.length; j++) {
+                        const sub = defaultSubCats[j];
+                        const pId = mainIdMap[sub.parentName] || null;
+                        await addDoc(categoriesCollectionRef, {
+                            name: sub.name,
+                            parentId: pId,
+                            order: j,
+                            createdAt: Date.now()
+                        });
                     }
                     return;
                 }
 
-                const catObjects = [];
+                const mains = [];
+                const subs = [];
+
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     if (data.name) {
-                        catObjects.push({
+                        const item = {
                             id: docSnap.id,
                             name: data.name,
+                            parentId: data.parentId || null,
                             order: data.order !== undefined ? data.order : 999
-                        });
+                        };
+                        if (!item.parentId) {
+                            mains.push(item);
+                        } else {
+                            subs.push(item);
+                        }
                     }
                 });
 
-                catObjects.sort((a, b) => a.order - b.order);
+                mains.sort((a, b) => a.order - b.order);
+                subs.sort((a, b) => a.order - b.order);
 
-                window.appState.categoryObjects = catObjects;
-                window.appState.instruments = ['ALL', ...catObjects.map(c => c.name)];
-                window.renderFilterControls();
-                window.updateAddInstrumentSelect();
+                window.appState.mainCategories = mains;
+                window.appState.subCategories = subs;
+
+                window.renderCategoryFilters();
+                window.updateModalCategoryDropdowns();
             }, (error) => {
                 console.error("Firestore categories listener error:", error);
                 if (error.code === 'permission-denied') {
@@ -634,15 +746,38 @@ service cloud.firestore {
             }
         };
 
-        window.firebaseAddCategory = async function(categoryName) {
+        window.firebaseAddMainCategory = async function(categoryName) {
             if (!categoriesCollectionRef) return false;
             try {
-                const nextOrder = window.appState.categoryObjects.length;
-                await addDoc(categoriesCollectionRef, { name: categoryName, order: nextOrder, createdAt: Date.now() });
+                const nextOrder = window.appState.mainCategories.length;
+                await addDoc(categoriesCollectionRef, {
+                    name: categoryName,
+                    parentId: null,
+                    order: nextOrder,
+                    createdAt: Date.now()
+                });
                 return true;
             } catch (err) {
-                console.error("Add category error:", err);
-                window.showToast("新增分類失敗：" + err.message, "error");
+                console.error("Add main category error:", err);
+                window.showToast("新增大類別失敗：" + err.message, "error");
+                return false;
+            }
+        };
+
+        window.firebaseAddSubCategory = async function(categoryName, parentMainId) {
+            if (!categoriesCollectionRef) return false;
+            try {
+                const nextOrder = window.appState.subCategories.length;
+                await addDoc(categoriesCollectionRef, {
+                    name: categoryName,
+                    parentId: parentMainId,
+                    order: nextOrder,
+                    createdAt: Date.now()
+                });
+                return true;
+            } catch (err) {
+                console.error("Add sub category error:", err);
+                window.showToast("新增小類別失敗：" + err.message, "error");
                 return false;
             }
         };
@@ -650,8 +785,16 @@ service cloud.firestore {
         window.firebaseDeleteCategory = async function(docId) {
             if (!categoriesCollectionRef) return false;
             try {
-                const targetRef = doc(db, "categories", docId);
-                await deleteDoc(targetRef);
+                // Check if it's a main category, if so, delete its subcategories too
+                const subCatsToDelete = window.appState.subCategories.filter(s => s.parentId === docId);
+                const batch = writeBatch(db);
+                
+                batch.delete(doc(db, "categories", docId));
+                subCatsToDelete.forEach(sub => {
+                    batch.delete(doc(db, "categories", sub.id));
+                });
+
+                await batch.commit();
                 return true;
             } catch (err) {
                 console.error("Delete category error:", err);
@@ -714,9 +857,10 @@ service cloud.firestore {
     <script>
         window.appState = {
             scores: [],
-            categoryObjects: [],
-            instruments: ['ALL', '鋼琴', '小提琴', '吉他', '長笛', '薩克斯風', '其他'],
-            activeInstrument: 'ALL',
+            mainCategories: [], // [{ id, name, parentId: null, order }]
+            subCategories: [],  // [{ id, name, parentId: string, order }]
+            activeMainCategory: 'ALL',
+            activeSubCategory: 'ALL',
             searchQuery: '',
             pendingDeleteId: null,
             pendingDeleteCatId: null,
@@ -728,8 +872,8 @@ service cloud.firestore {
 
         document.addEventListener('DOMContentLoaded', () => {
             initDarkMode();
-            renderFilterControls();
-            updateAddInstrumentSelect();
+            renderCategoryFilters();
+            updateModalCategoryDropdowns();
         });
 
         function convertDriveUrl(url) {
@@ -747,30 +891,33 @@ service cloud.firestore {
             return { preview: url, view: url };
         }
 
-        function renderFilterControls() {
-            const instContainer = document.getElementById('instrumentContainer');
-            if (!instContainer) return;
+        // Render Tier-1 and Tier-2 Category Filters
+        function renderCategoryFilters() {
+            const mainContainer = document.getElementById('mainCategoryContainer');
+            const subContainer = document.getElementById('subCategoryContainer');
+            const subSection = document.getElementById('subCategorySection');
+            if (!mainContainer || !subContainer) return;
 
-            const isAdmin = window.appState.isAdmin;
-            const activeInst = window.appState.activeInstrument;
+            const { isAdmin, mainCategories, subCategories, activeMainCategory, activeSubCategory } = window.appState;
 
-            let html = `
-                <button onclick="setInstrumentFilter('ALL')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
-                    activeInst === 'ALL' 
-                    ? 'bg-sky-600 text-white shadow-sm' 
+            // 1. Render Main Categories (Tier 1)
+            let mainHtml = `
+                <button onclick="setMainCategoryFilter('ALL')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                    activeMainCategory === 'ALL' 
+                    ? 'bg-sky-600 text-white shadow-sm font-semibold' 
                     : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }">
-                    全部分類
+                    全部大類
                 </button>
             `;
 
             if (!isAdmin) {
-                html += window.appState.categoryObjects.map(cat => {
-                    const isActive = activeInst === cat.name;
+                mainHtml += mainCategories.map(cat => {
+                    const isActive = activeMainCategory === cat.name;
                     return `
-                        <button onclick="setInstrumentFilter('${escapeQuotes(cat.name)}')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                        <button onclick="setMainCategoryFilter('${escapeQuotes(cat.name)}')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
                             isActive 
-                            ? 'bg-sky-600 text-white shadow-sm' 
+                            ? 'bg-sky-600 text-white shadow-sm font-semibold' 
                             : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }">
                             ${cat.name}
@@ -778,23 +925,23 @@ service cloud.firestore {
                     `;
                 }).join('');
             } else {
-                html += window.appState.categoryObjects.map(cat => {
-                    const isActive = activeInst === cat.name;
+                mainHtml += mainCategories.map(cat => {
+                    const isActive = activeMainCategory === cat.name;
                     return `
                         <div draggable="true" 
                              ondragstart="handleCatDragStart(event, '${cat.id}')"
                              ondragover="handleCatDragOver(event)"
-                             ondrop="handleCatDrop(event, '${cat.id}')"
+                             ondrop="handleCatDrop(event, '${cat.id}', 'main')"
                              ondragend="handleCatDragEnd(event)"
                              class="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-grab active:cursor-grabbing border ${
                                  isActive 
-                                 ? 'bg-sky-600 text-white border-sky-600 shadow-sm' 
+                                 ? 'bg-sky-600 text-white border-sky-600 shadow-sm font-semibold' 
                                  : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
                              }">
                             <i class="fa-solid fa-grip-vertical text-[10px] opacity-40 group-hover:opacity-100 transition"></i>
-                            <span onclick="setInstrumentFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
-                            <button onclick="event.stopPropagation(); promptDeleteCategory('${cat.id}', '${escapeQuotes(cat.name)}')" 
-                                    class="ml-0.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition p-0.5" title="刪除此分類">
+                            <span onclick="setMainCategoryFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
+                            <button onclick="event.stopPropagation(); promptDeleteCategory('${cat.id}', '${escapeQuotes(cat.name)}', '大類別')" 
+                                    class="ml-0.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition p-0.5" title="刪除大類別（及其子類別）">
                                 <i class="fa-solid fa-xmark text-xs"></i>
                             </button>
                         </div>
@@ -802,9 +949,88 @@ service cloud.firestore {
                 }).join('');
             }
 
-            instContainer.innerHTML = html;
+            mainContainer.innerHTML = mainHtml;
+
+            // 2. Render Sub Categories (Tier 2) - Only show when a specific Main Category is selected
+            if (activeMainCategory === 'ALL') {
+                if (subSection) subSection.classList.add('hidden');
+                subContainer.innerHTML = '';
+            } else {
+                if (subSection) subSection.classList.remove('hidden');
+
+                const selectedMainObj = mainCategories.find(m => m.name === activeMainCategory);
+                let visibleSubCats = [];
+                if (selectedMainObj) {
+                    visibleSubCats = subCategories.filter(s => s.parentId === selectedMainObj.id);
+                } else {
+                    visibleSubCats = subCategories.filter(s => s.parentName === activeMainCategory);
+                }
+
+                let subHtml = `
+                    <button onclick="setSubCategoryFilter('ALL')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                        activeSubCategory === 'ALL' 
+                        ? 'bg-indigo-600 text-white shadow-sm font-semibold' 
+                        : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    }">
+                        全部小類
+                    </button>
+                `;
+
+                if (!isAdmin) {
+                    subHtml += visibleSubCats.map(cat => {
+                        const isActive = activeSubCategory === cat.name;
+                        return `
+                            <button onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                                isActive 
+                                ? 'bg-indigo-600 text-white shadow-sm font-semibold' 
+                                : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            }">
+                                ${cat.name}
+                            </button>
+                        `;
+                    }).join('');
+                } else {
+                    subHtml += visibleSubCats.map(cat => {
+                        const isActive = activeSubCategory === cat.name;
+                        return `
+                            <div draggable="true" 
+                                 ondragstart="handleCatDragStart(event, '${cat.id}')"
+                                 ondragover="handleCatDragOver(event)"
+                                 ondrop="handleCatDrop(event, '${cat.id}', 'sub')"
+                                 ondragend="handleCatDragEnd(event)"
+                                 class="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-grab active:cursor-grabbing border ${
+                                     isActive 
+                                     ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm font-semibold' 
+                                     : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                 }">
+                                <i class="fa-solid fa-grip-vertical text-[10px] opacity-40 group-hover:opacity-100 transition"></i>
+                                <span onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
+                                <button onclick="event.stopPropagation(); promptDeleteCategory('${cat.id}', '${escapeQuotes(cat.name)}', '小類別')" 
+                                        class="ml-0.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition p-0.5" title="刪除此小類別">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                subContainer.innerHTML = subHtml;
+            }
         }
-        window.renderFilterControls = renderFilterControls;
+        window.renderCategoryFilters = renderCategoryFilters;
+
+        function setMainCategoryFilter(mainName) {
+            window.appState.activeMainCategory = mainName;
+            window.appState.activeSubCategory = 'ALL';
+            renderCategoryFilters();
+            window.renderScores();
+        }
+
+        function setSubCategoryFilter(subName) {
+            window.appState.activeSubCategory = subName;
+            renderCategoryFilters();
+            window.renderScores();
+        }
 
         window.handleCatDragStart = function(e, catId) {
             window.appState.draggedCatId = catId;
@@ -816,20 +1042,22 @@ service cloud.firestore {
             e.dataTransfer.dropEffect = 'move';
         };
 
-        window.handleCatDrop = function(e, targetCatId) {
+        window.handleCatDrop = function(e, targetCatId, type) {
             e.preventDefault();
             const draggedId = window.appState.draggedCatId;
             if (!draggedId || draggedId === targetCatId) return;
 
-            const list = [...window.appState.categoryObjects];
+            const list = type === 'main' ? [...window.appState.mainCategories] : [...window.appState.subCategories];
             const draggedIdx = list.findIndex(c => c.id === draggedId);
             const targetIdx = list.findIndex(c => c.id === targetCatId);
 
             if (draggedIdx > -1 && targetIdx > -1) {
                 const [moved] = list.splice(draggedIdx, 1);
                 list.splice(targetIdx, 0, moved);
-                window.appState.categoryObjects = list;
-                window.renderFilterControls();
+                if (type === 'main') window.appState.mainCategories = list;
+                else window.appState.subCategories = list;
+
+                window.renderCategoryFilters();
                 window.firebaseReorderCategories(list);
             }
         };
@@ -838,11 +1066,11 @@ service cloud.firestore {
             window.appState.draggedCatId = null;
         };
 
-        window.promptDeleteCategory = function(catId, catName) {
+        window.promptDeleteCategory = function(catId, catName, catType) {
             window.appState.pendingDeleteCatId = catId;
             window.appState.pendingDeleteCatName = catName;
             const text = document.getElementById('deleteCategoryConfirmText');
-            if (text) text.innerText = `確定要從雲端刪除樂譜分類《${catName}》嗎？`;
+            if (text) text.innerText = `確定要從雲端刪除${catType}《${catName}》嗎？${catType === '大類別' ? '（該大類別下的所有小類別將一併移除）' : ''}`;
             const modal = document.getElementById('deleteCategoryConfirmModal');
             if (modal) modal.classList.remove('hidden');
         };
@@ -875,20 +1103,51 @@ service cloud.firestore {
 
             if (success) {
                 showToast(`已成功刪除分類《${catName}》`, "success");
-                if (window.appState.activeInstrument === catName) {
-                    window.appState.activeInstrument = 'ALL';
+                if (window.appState.activeMainCategory === catName) {
+                    window.appState.activeMainCategory = 'ALL';
+                }
+                if (window.appState.activeSubCategory === catName) {
+                    window.appState.activeSubCategory = 'ALL';
                 }
             }
         };
 
-        function updateAddInstrumentSelect() {
-            const select = document.getElementById('addInstrument');
-            if (!select) return;
+        function updateModalCategoryDropdowns() {
+            const addMainSel = document.getElementById('addMainCategory');
+            const parentMainSel = document.getElementById('parentMainCategorySelect');
+            const mains = window.appState.mainCategories;
 
-            const options = window.appState.instruments.filter(i => i !== 'ALL');
-            select.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            if (addMainSel) {
+                addMainSel.innerHTML = mains.map(m => `<option value="${m.name}">${m.name}</option>`).join('');
+                handleAddMainCategoryChange();
+            }
+
+            if (parentMainSel) {
+                parentMainSel.innerHTML = mains.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+            }
         }
-        window.updateAddInstrumentSelect = updateAddInstrumentSelect;
+        window.updateModalCategoryDropdowns = updateModalCategoryDropdowns;
+
+        function handleAddMainCategoryChange() {
+            const addMainSel = document.getElementById('addMainCategory');
+            const addSubSel = document.getElementById('addSubCategory');
+            if (!addMainSel || !addSubSel) return;
+
+            const selectedMainName = addMainSel.value;
+            const selectedMainObj = window.appState.mainCategories.find(m => m.name === selectedMainName);
+            
+            let subs = [];
+            if (selectedMainObj) {
+                subs = window.appState.subCategories.filter(s => s.parentId === selectedMainObj.id);
+            }
+
+            if (subs.length === 0) {
+                addSubSel.innerHTML = `<option value="通用">通用</option>`;
+            } else {
+                addSubSel.innerHTML = subs.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+            }
+        }
+        window.handleAddMainCategoryChange = handleAddMainCategoryChange;
 
         window.renderScores = function() {
             const grid = document.getElementById('scoreGrid');
@@ -896,19 +1155,27 @@ service cloud.firestore {
             const badge = document.getElementById('resultCountBadge');
             if (!grid || !emptyState || !badge) return;
 
-            const { scores, activeInstrument, searchQuery, isAdmin } = window.appState;
+            const { scores, activeMainCategory, activeSubCategory, searchQuery, isAdmin } = window.appState;
 
             const filtered = scores.filter(s => {
                 const q = searchQuery.toLowerCase().trim();
                 const matchQuery = !q || 
                     (s.title && s.title.toLowerCase().includes(q)) ||
                     (s.composer && s.composer.toLowerCase().includes(q)) ||
+                    (s.mainCategory && s.mainCategory.toLowerCase().includes(q)) ||
+                    (s.subCategory && s.subCategory.toLowerCase().includes(q)) ||
                     (s.instrument && s.instrument.toLowerCase().includes(q)) ||
                     (s.tags && s.tags.some(t => t.toLowerCase().includes(q)));
 
-                const matchInst = activeInstrument === 'ALL' || s.instrument === activeInstrument;
+                const matchMain = activeMainCategory === 'ALL' || 
+                    s.mainCategory === activeMainCategory || 
+                    s.instrument === activeMainCategory;
 
-                return matchQuery && matchInst;
+                const matchSub = activeSubCategory === 'ALL' || 
+                    s.subCategory === activeSubCategory || 
+                    s.instrument === activeSubCategory;
+
+                return matchQuery && matchMain && matchSub;
             });
 
             badge.innerText = filtered.length;
@@ -923,13 +1190,16 @@ service cloud.firestore {
 
             grid.innerHTML = filtered.map(s => {
                 const links = convertDriveUrl(s.driveUrl);
+                const displayCategory = s.mainCategory 
+                    ? `${s.mainCategory} ‧ ${s.subCategory || '通用'}` 
+                    : (s.instrument || '未指定');
 
                 return `
                     <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/50">
-                                    ${s.instrument || '未指定'}
+                                <span class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/50">
+                                    ${displayCategory}
                                 </span>
                                 ${isAdmin ? `
                                     <button onclick="promptDelete('${s.id}', '${escapeQuotes(s.title)}')" class="text-slate-300 hover:text-rose-500 transition p-1" title="刪除樂譜">
@@ -982,20 +1252,15 @@ service cloud.firestore {
             window.renderScores();
         }
 
-        function setInstrumentFilter(inst) {
-            window.appState.activeInstrument = inst;
-            renderFilterControls();
-            window.renderScores();
-        }
-
         function resetFilters() {
-            window.appState.activeInstrument = 'ALL';
+            window.appState.activeMainCategory = 'ALL';
+            window.appState.activeSubCategory = 'ALL';
             window.appState.searchQuery = '';
             const input = document.getElementById('searchInput');
             if (input) input.value = '';
             const clearBtn = document.getElementById('clearSearchBtn');
             if (clearBtn) clearBtn.classList.add('hidden');
-            renderFilterControls();
+            renderCategoryFilters();
             window.renderScores();
         }
 
@@ -1035,24 +1300,24 @@ service cloud.firestore {
             const btnText = document.getElementById('adminModeText');
             const btnIcon = document.getElementById('adminModeIcon');
             const addScoreBtn = document.getElementById('addScoreBtn');
-            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            const adminCatActions = document.getElementById('adminCatActions');
             const changePasswordBtn = document.getElementById('changePasswordBtn');
 
             if (isAdmin) {
                 if (btnText) btnText.innerText = "管理模式 (登出)";
                 if (btnIcon) btnIcon.className = "fa-solid fa-lock-open text-emerald-500";
                 if (addScoreBtn) addScoreBtn.classList.remove('hidden');
-                if (addCategoryBtn) addCategoryBtn.classList.remove('hidden');
+                if (adminCatActions) adminCatActions.classList.remove('hidden');
                 if (changePasswordBtn) changePasswordBtn.classList.remove('hidden');
             } else {
                 if (btnText) btnText.innerText = "閱覽模式";
                 if (btnIcon) btnIcon.className = "fa-solid fa-lock text-amber-500";
                 if (addScoreBtn) addScoreBtn.classList.add('hidden');
-                if (addCategoryBtn) addCategoryBtn.classList.add('hidden');
+                if (adminCatActions) adminCatActions.classList.add('hidden');
                 if (changePasswordBtn) changePasswordBtn.classList.add('hidden');
             }
 
-            renderFilterControls();
+            renderCategoryFilters();
             window.renderScores();
         }
 
@@ -1115,27 +1380,57 @@ service cloud.firestore {
             showToast("管理員密碼已成功修改並同步！", "success");
         }
 
-        function openAddCategoryModal() {
-            const modal = document.getElementById('addCategoryModal');
+        function openAddMainCategoryModal() {
+            const modal = document.getElementById('addMainCategoryModal');
             if (modal) modal.classList.remove('hidden');
         }
 
-        function closeAddCategoryModal() {
-            const modal = document.getElementById('addCategoryModal');
+        function closeAddMainCategoryModal() {
+            const modal = document.getElementById('addMainCategoryModal');
             if (modal) modal.classList.add('hidden');
-            const input = document.getElementById('newCategoryInput');
+            const input = document.getElementById('newMainCategoryInput');
             if (input) input.value = '';
         }
 
-        async function handleAddCategorySubmit(e) {
+        async function handleAddMainCategorySubmit(e) {
             e.preventDefault();
-            const newCat = document.getElementById('newCategoryInput').value.trim();
+            const newCat = document.getElementById('newMainCategoryInput').value.trim();
             if (!newCat) return;
 
-            const success = await window.firebaseAddCategory(newCat);
+            const success = await window.firebaseAddMainCategory(newCat);
             if (success) {
-                showToast(`成功新增分類《${newCat}》`, "success");
-                closeAddCategoryModal();
+                showToast(`成功新增大類別《${newCat}》`, "success");
+                closeAddMainCategoryModal();
+            }
+        }
+
+        function openAddSubCategoryModal() {
+            if (window.appState.mainCategories.length === 0) {
+                showToast("請先新增至少一個大類別！", "error");
+                return;
+            }
+            updateModalCategoryDropdowns();
+            const modal = document.getElementById('addSubCategoryModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeAddSubCategoryModal() {
+            const modal = document.getElementById('addSubCategoryModal');
+            if (modal) modal.classList.add('hidden');
+            const input = document.getElementById('newSubCategoryInput');
+            if (input) input.value = '';
+        }
+
+        async function handleAddSubCategorySubmit(e) {
+            e.preventDefault();
+            const parentMainId = document.getElementById('parentMainCategorySelect').value;
+            const newSubCat = document.getElementById('newSubCategoryInput').value.trim();
+            if (!parentMainId || !newSubCat) return;
+
+            const success = await window.firebaseAddSubCategory(newSubCat, parentMainId);
+            if (success) {
+                showToast(`成功新增小類別《${newSubCat}》`, "success");
+                closeAddSubCategoryModal();
             }
         }
 
@@ -1182,6 +1477,7 @@ service cloud.firestore {
         window.hideIframeLoader = hideIframeLoader;
 
         function openAddModal() {
+            updateModalCategoryDropdowns();
             const modal = document.getElementById('addModal');
             if (modal) modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
@@ -1205,13 +1501,22 @@ service cloud.firestore {
 
             const title = document.getElementById('addTitle').value.trim();
             const composer = document.getElementById('addComposer').value.trim();
-            const instrument = document.getElementById('addInstrument').value;
+            const mainCategory = document.getElementById('addMainCategory').value;
+            const subCategory = document.getElementById('addSubCategory').value;
             const tagsRaw = document.getElementById('addTags').value;
             const driveUrl = document.getElementById('addDriveUrl').value.trim();
 
-            const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [instrument];
+            const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [subCategory];
 
-            const success = await window.firebaseAddScore({ title, composer, instrument, tags, driveUrl });
+            const success = await window.firebaseAddScore({
+                title,
+                composer,
+                mainCategory,
+                subCategory,
+                instrument: subCategory,
+                tags,
+                driveUrl
+            });
 
             if (btn) {
                 btn.disabled = false;
