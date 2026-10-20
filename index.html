@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>道樂樂譜閱覽器</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8);
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-toast {
+            animation: slideDown 0.3s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- Firebase Rules Warning Modal (Shown if permission denied) -->
+    <div id="rulesWarningModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center space-x-3 text-amber-500">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-white">Firebase 資料庫權限未開啟</h3>
+            </div>
+            <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                您的專案權限受限或尚未開啟讀寫權限。請前往 Firebase Console 調整 Rules 設定：
+            </p>
+            <div class="bg-slate-900 text-slate-200 p-3 rounded-xl font-mono text-xs overflow-x-auto">
+                <pre>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeRulesModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold transition">
+                    了解並關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            
+            <!-- Header Left Brand -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+                    <i class="fa-solid fa-music text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold bg-gradient-to-r from-sky-600 to-indigo-600 dark:from-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                        道樂樂譜閱覽器
+                    </h1>
+                    <!-- Firebase Connection Status Indicator -->
+                    <div id="syncBadge" class="flex items-center space-x-1.5 text-[11px] text-slate-400">
+                        <span class="w-2 h-2 rounded-full bg-slate-300 animate-pulse"></span>
+                        <span>連線中...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Right Controls -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Mode Switch Button -->
+                <button id="adminModeBtn" onclick="toggleAdminModePrompt()" class="flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition shadow-sm">
+                    <i id="adminModeIcon" class="fa-solid fa-lock text-amber-500"></i>
+                    <span id="adminModeText">閱覽模式</span>
+                </button>
+
+                <!-- Change Password Button (Admin Only) -->
+                <button id="changePasswordBtn" onclick="openChangePasswordModal()" class="hidden flex items-center space-x-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition shadow-sm" title="修改管理密碼">
+                    <i class="fa-solid fa-key text-amber-500"></i>
+                    <span class="hidden sm:inline">修改密碼</span>
+                </button>
+
+                <!-- Dark Mode Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition shadow-sm" title="切換深淺模式">
+                    <i id="themeIcon" class="fa-solid fa-moon text-indigo-500 dark:text-amber-400"></i>
+                </button>
+
+                <!-- Add Score Modal Trigger (Admin Only) -->
+                <button id="addScoreBtn" onclick="openAddModal()" class="hidden flex items-center space-x-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm shadow-md shadow-sky-500/20 transition transform active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden sm:inline">新增樂譜</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        
+        <!-- Search & Filter Controls -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-700/80 mb-8 space-y-5">
+            
+            <!-- Real-time Keyword Search Bar -->
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜尋曲名、作曲家、分類或標籤 (例如：卡農、鋼琴、久石讓...)" 
+                    class="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition text-sm">
+                <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Category Filter Buttons -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">樂譜分類</span>
+                    <div class="flex items-center space-x-3">
+                        <button id="addCategoryBtn" onclick="openAddCategoryModal()" class="hidden text-xs text-indigo-600 dark:text-indigo-400 font-semibold hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-folder-plus"></i> 新增分類
+                        </button>
+                        <button onclick="resetFilters()" class="text-xs text-sky-600 dark:text-sky-400 hover:underline flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-left"></i> 重設條件
+                        </button>
+                    </div>
+                </div>
+                <div id="instrumentContainer" class="flex flex-wrap gap-2">
+                    <!-- Dynamic instrument pills -->
+                </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <div class="text-xs text-slate-400">
+                    目前展示：<span id="resultCountBadge" class="font-bold text-sky-600 dark:text-sky-400">0</span> 首
+                </div>
+            </div>
+        </div>
+
+        <!-- Skeleton Loading Loader -->
+        <div id="skeletonLoader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="h-60 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-60 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-60 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+        </div>
+
+        <!-- Scores Grid -->
+        <div id="scoreGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Score Cards Populated via JS -->
+        </div>
+
+        <!-- Empty State Container -->
+        <div id="emptyState" class="hidden text-center py-16 px-4">
+            <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 text-2xl">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3 class="text-base font-bold text-slate-700 dark:text-slate-300">未找到相符的樂譜</h3>
+            <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto mb-4">請嘗試更換搜尋關鍵字，或切換至管理模式新增樂譜。</p>
+            <button onclick="resetFilters()" class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-medium hover:bg-sky-700 transition">
+                重設篩選條件
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-6 mt-12 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <div>道樂樂譜閱覽器 &copy; Firebase 實時同步版本</div>
+            <div>託管於 Google Drive 雲端架構</div>
+        </div>
+    </footer>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. Google Drive Online Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex flex-col justify-between p-3 sm:p-6 transition-opacity">
+        <div class="max-w-6xl w-full mx-auto flex items-center justify-between text-white mb-3">
+            <div class="truncate pr-4">
+                <h2 id="modalTitle" class="text-base sm:text-lg font-bold truncate">樂譜名稱</h2>
+                <p id="modalComposer" class="text-xs text-slate-300 truncate">作曲家</p>
+            </div>
+            <div class="flex items-center space-x-2 shrink-0">
+                <a id="modalExternalLink" href="#" target="_blank" rel="noopener noreferrer" 
+                    class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium flex items-center space-x-1.5 transition">
+                    <i class="fa-brands fa-google-drive text-emerald-400"></i>
+                    <span class="hidden sm:inline">開啟原雲端連結</span>
+                </a>
+                <button onclick="closePreviewModal()" class="p-2 hover:bg-white/10 rounded-xl text-slate-300 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="max-w-6xl w-full mx-auto flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl relative flex items-center justify-center border border-slate-800">
+            <!-- Iframe Loading Spinner -->
+            <div id="iframeLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-10 text-slate-400 text-xs">
+                <div class="w-8 h-8 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                <span>正在載入 Google 雲端樂譜...</span>
+            </div>
+            
+            <iframe id="previewIframe" class="w-full h-full border-0 relative z-20" src=""></iframe>
+        </div>
+    </div>
+
+    <!-- 2. Add New Score Modal -->
+    <div id="addModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-cloud-arrow-up text-sky-500"></i>
+                    <span>新增雲端樂譜</span>
+                </h3>
+                <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="addScoreForm" onsubmit="handleAddScoreSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">曲名 <span class="text-rose-500">*</span></label>
+                    <input type="text" id="addTitle" required placeholder="例如：卡農 (Canon in D)" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">作曲家</label>
+                        <input type="text" id="addComposer" placeholder="例如：Pachelbel" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">樂譜分類 <span class="text-rose-500">*</span></label>
+                        <select id="addInstrument" required class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">風格標籤</label>
+                    <input type="text" id="addTags" placeholder="古典, 婚禮 (逗號分開)" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Google Drive 連結 <span class="text-rose-500">*</span></label>
+                    <input type="url" id="addDriveUrl" required placeholder="https://drive.google.com/file/d/.../view" class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeAddModal()" class="px-4 py-2 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">取消</button>
+                    <button type="submit" id="submitScoreBtn" class="px-4 py-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-medium rounded-xl shadow-md transition">
+                        儲存並同步至雲端
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Delete Confirmation Custom Modal -->
+    <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
+            <div class="w-12 h-12 bg-rose-100 dark:bg-rose-950/50 text-rose-500 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">確定要刪除樂譜嗎？</h3>
+                <p id="deleteConfirmText" class="text-xs text-slate-400 mt-1">此動作將同步從雲端資料庫移除。</p>
+            </div>
+            <div class="flex justify-center space-x-2 pt-2">
+                <button onclick="closeDeleteConfirmModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 transition">
+                    取消
+                </button>
+                <button onclick="executeDeleteScore()" id="confirmDeleteBtn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium shadow-md transition">
+                    確定刪除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Admin Mode Password Modal -->
+    <div id="adminPasswordModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-amber-500"></i>
+                    <span>後台管理員驗證</span>
+                </h3>
+                <button onclick="closeAdminPasswordModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form onsubmit="handleAdminLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">管理密碼</label>
+                    <input type="password" id="adminPasswordInput" required placeholder="請輸入密碼..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeAdminPasswordModal()" class="px-4 py-2 text-xs font-medium text-slate-500">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-xl shadow-md transition">登入管理模式</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 5. Add Category Modal -->
+    <div id="addCategoryModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-folder-plus text-indigo-500"></i>
+                    <span>新增樂譜分類</span>
+                </h3>
+                <button onclick="closeAddCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form onsubmit="handleAddCategorySubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">新樂譜分類名稱</label>
+                    <input type="text" id="newCategoryInput" required placeholder="例如：二胡、合唱、烏克麗麗..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeAddCategoryModal()" class="px-4 py-2 text-xs font-medium text-slate-500">取消</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-xl shadow-md transition">新增分類</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 6. Delete Category Confirmation Modal -->
+    <div id="deleteCategoryConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
+            <div class="w-12 h-12 bg-rose-100 dark:bg-rose-950/50 text-rose-500 rounded-full flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-folder-minus"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100">確定要刪除分類嗎？</h3>
+                <p id="deleteCategoryConfirmText" class="text-xs text-slate-400 mt-1">此動作將同步從雲端資料庫移除該分類。</p>
+            </div>
+            <div class="flex justify-center space-x-2 pt-2">
+                <button onclick="closeDeleteCategoryConfirmModal()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium hover:bg-slate-200 transition">
+                    取消
+                </button>
+                <button onclick="executeDeleteCategory()" id="confirmDeleteCatBtn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium shadow-md transition">
+                    確定刪除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Change Password Modal -->
+    <div id="changePasswordModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-500"></i>
+                    <span>修改管理員密碼</span>
+                </h3>
+                <button onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <form onsubmit="handleChangePasswordSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">舊密碼</label>
+                    <input type="password" id="oldPasswordInput" required placeholder="請輸入當前密碼..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">新密碼</label>
+                    <input type="password" id="newPasswordInput" required placeholder="請輸入新密碼..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">確認新密碼</label>
+                    <input type="password" id="confirmPasswordInput" required placeholder="請再次輸入新密碼..." class="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="pt-2 flex justify-end space-x-2 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2 text-xs font-medium text-slate-500">取消</button>
+                    <button type="submit" id="submitChangePasswordBtn" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-xl shadow-md transition">更新密碼</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= FIREBASE ES MODULE ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, setDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBPSbd4wNDNLvIUUFF62MhfHyLao4FOhw",
+            authDomain: "togaku-music.firebaseapp.com",
+            projectId: "togaku-music",
+            storageBucket: "togaku-music.firebasestorage.app",
+            messagingSenderId: "403368948181",
+            appId: "1:403368948181:web:9ee3f956f844d1cf970d5c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let scoresCollectionRef = null;
+        let categoriesCollectionRef = null;
+
+        const sampleSeedScores = [
+            {
+                title: "卡農 (Canon in D)",
+                composer: "Pachelbel",
+                instrument: "鋼琴",
+                tags: ["古典", "婚禮", "獨奏"],
+                driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view"
+            },
+            {
+                title: "天空之城 (Carrying You)",
+                composer: "久石讓",
+                instrument: "小提琴",
+                tags: ["宮崎駿", "動漫", "名曲"],
+                driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view"
+            },
+            {
+                title: "愛的羅曼史 (Romance)",
+                composer: "Spanish Folk",
+                instrument: "吉他",
+                tags: ["古典", "抒情"],
+                driveUrl: "https://drive.google.com/file/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs/view"
+            }
+        ];
+
+        const defaultCategories = ['鋼琴', '小提琴', '吉他', '長笛', '薩克斯風', '其他'];
+
+        let syncInitialized = false;
+
+        function startFirestoreSync() {
+            if (syncInitialized) return;
+            syncInitialized = true;
+            const syncBadge = document.getElementById('syncBadge');
+            if (syncBadge && (!syncBadge.innerHTML.includes('bg-emerald-400'))) {
+                syncBadge.innerHTML = `
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>雲端同步中</span>
+                `;
+            }
+            initRealtimeSync();
+            initCategorySync();
+            initSettingsSync();
+        }
+
+        async function startAuth() {
+            try {
+                await signInAnonymously(auth);
+            } catch (err) {
+                console.warn("Auth initialization error:", err);
+                const syncBadge = document.getElementById('syncBadge');
+                if (syncBadge) {
+                    if (err.code === 'auth/operation-not-allowed') {
+                        syncBadge.innerHTML = `
+                            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                            <span class="text-amber-600 dark:text-amber-400 font-medium">請至 Firebase Console 開啟「匿名驗證」</span>
+                        `;
+                    } else {
+                        syncBadge.innerHTML = `
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            <span class="text-rose-500 font-medium">連線失敗 (${err.code || '未知的錯誤'})</span>
+                        `;
+                    }
+                }
+                startFirestoreSync();
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                startFirestoreSync();
+            }
+        });
+
+        let hasSeededScores = false;
+        let hasSeededCategories = false;
+
+        function initRealtimeSync() {
+            scoresCollectionRef = collection(db, "scores");
+
+            onSnapshot(scoresCollectionRef, async (snapshot) => {
+                if (snapshot.empty && !hasSeededScores) {
+                    hasSeededScores = true;
+                    for (const score of sampleSeedScores) {
+                        await addDoc(scoresCollectionRef, { ...score, createdAt: Date.now() });
+                    }
+                    return;
+                }
+
+                const list = [];
+                snapshot.forEach((docSnap) => {
+                    list.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+                window.appState.scores = list;
+                const skel = document.getElementById('skeletonLoader');
+                const grid = document.getElementById('scoreGrid');
+                if (skel) skel.classList.add('hidden');
+                if (grid) grid.classList.remove('hidden');
+                window.renderScores();
+            }, (error) => {
+                console.error("Firestore scores listener error:", error);
+                if (error.code === 'permission-denied') {
+                    const modal = document.getElementById('rulesWarningModal');
+                    if (modal) modal.classList.remove('hidden');
+                } else {
+                    window.showToast("連線至雲端時發生錯誤：" + error.message, "error");
+                }
+            });
+        }
+
+        function initCategorySync() {
+            categoriesCollectionRef = collection(db, "categories");
+
+            onSnapshot(categoriesCollectionRef, async (snapshot) => {
+                if (snapshot.empty && !hasSeededCategories) {
+                    hasSeededCategories = true;
+                    for (let i = 0; i < defaultCategories.length; i++) {
+                        await addDoc(categoriesCollectionRef, { name: defaultCategories[i], order: i, createdAt: Date.now() });
+                    }
+                    return;
+                }
+
+                const catObjects = [];
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    if (data.name) {
+                        catObjects.push({
+                            id: docSnap.id,
+                            name: data.name,
+                            order: data.order !== undefined ? data.order : 999
+                        });
+                    }
+                });
+
+                catObjects.sort((a, b) => a.order - b.order);
+
+                window.appState.categoryObjects = catObjects;
+                window.appState.instruments = ['ALL', ...catObjects.map(c => c.name)];
+                window.renderFilterControls();
+                window.updateAddInstrumentSelect();
+            }, (error) => {
+                console.error("Firestore categories listener error:", error);
+                if (error.code === 'permission-denied') {
+                    const modal = document.getElementById('rulesWarningModal');
+                    if (modal) modal.classList.remove('hidden');
+                } else {
+                    window.showToast("連線分類雲端時發生錯誤：" + error.message, "error");
+                }
+            });
+        }
+
+        function initSettingsSync() {
+            const settingsDocRef = doc(db, "settings", "adminConfig");
+            onSnapshot(settingsDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data && data.password) {
+                        window.appState.adminPassword = data.password;
+                        localStorage.setItem('admin_password', data.password);
+                    }
+                }
+            }, (error) => {
+                console.warn("Settings listener error:", error);
+            });
+        }
+
+        window.firebaseAddScore = async function(data) {
+            if (!scoresCollectionRef) return false;
+            try {
+                await addDoc(scoresCollectionRef, { ...data, createdAt: Date.now() });
+                return true;
+            } catch (err) {
+                console.error("Add score error:", err);
+                if (err.code === 'permission-denied') {
+                    const modal = document.getElementById('rulesWarningModal');
+                    if (modal) modal.classList.remove('hidden');
+                } else {
+                    window.showToast("新增失敗：" + err.message, "error");
+                }
+                return false;
+            }
+        };
+
+        window.firebaseAddCategory = async function(categoryName) {
+            if (!categoriesCollectionRef) return false;
+            try {
+                const nextOrder = window.appState.categoryObjects.length;
+                await addDoc(categoriesCollectionRef, { name: categoryName, order: nextOrder, createdAt: Date.now() });
+                return true;
+            } catch (err) {
+                console.error("Add category error:", err);
+                window.showToast("新增分類失敗：" + err.message, "error");
+                return false;
+            }
+        };
+
+        window.firebaseDeleteCategory = async function(docId) {
+            if (!categoriesCollectionRef) return false;
+            try {
+                const targetRef = doc(db, "categories", docId);
+                await deleteDoc(targetRef);
+                return true;
+            } catch (err) {
+                console.error("Delete category error:", err);
+                window.showToast("刪除分類失敗：" + err.message, "error");
+                return false;
+            }
+        };
+
+        window.firebaseReorderCategories = async function(reorderedList) {
+            if (!categoriesCollectionRef) return false;
+            try {
+                const batch = writeBatch(db);
+                reorderedList.forEach((cat, idx) => {
+                    const ref = doc(db, "categories", cat.id);
+                    batch.update(ref, { order: idx });
+                });
+                await batch.commit();
+                return true;
+            } catch (err) {
+                console.error("Reorder categories error:", err);
+                window.showToast("更新分類順序失敗：" + err.message, "error");
+                return false;
+            }
+        };
+
+        window.firebaseUpdateAdminPassword = async function(newPassword) {
+            try {
+                const settingsDocRef = doc(db, "settings", "adminConfig");
+                await setDoc(settingsDocRef, { password: newPassword, updatedAt: Date.now() }, { merge: true });
+                return true;
+            } catch (err) {
+                console.error("Update admin password error:", err);
+                window.showToast("同步新密碼至雲端失敗：" + err.message, "error");
+                return false;
+            }
+        };
+
+        window.firebaseDeleteScore = async function(docId) {
+            if (!scoresCollectionRef) return false;
+            try {
+                const targetRef = doc(db, "scores", docId);
+                await deleteDoc(targetRef);
+                return true;
+            } catch (err) {
+                console.error("Delete score error:", err);
+                if (err.code === 'permission-denied') {
+                    const modal = document.getElementById('rulesWarningModal');
+                    if (modal) modal.classList.remove('hidden');
+                } else {
+                    window.showToast("刪除失敗：" + err.message, "error");
+                }
+                return false;
+            }
+        };
+
+        startAuth();
+    </script>
+
+    <!-- ================= UI APP SCRIPT ================= -->
+    <script>
+        window.appState = {
+            scores: [],
+            categoryObjects: [],
+            instruments: ['ALL', '鋼琴', '小提琴', '吉他', '長笛', '薩克斯風', '其他'],
+            activeInstrument: 'ALL',
+            searchQuery: '',
+            pendingDeleteId: null,
+            pendingDeleteCatId: null,
+            pendingDeleteCatName: null,
+            draggedCatId: null,
+            isAdmin: false,
+            adminPassword: localStorage.getItem('admin_password') || '1234'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initDarkMode();
+            renderFilterControls();
+            updateAddInstrumentSelect();
+        });
+
+        function convertDriveUrl(url) {
+            if (!url) return { preview: '', view: '#' };
+            const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || 
+                                url.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                                url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (fileIdMatch && fileIdMatch[1]) {
+                const id = fileIdMatch[1];
+                return {
+                    preview: `https://drive.google.com/file/d/${id}/preview`,
+                    view: `https://drive.google.com/file/d/${id}/view?usp=sharing`
+                };
+            }
+            return { preview: url, view: url };
+        }
+
+        function renderFilterControls() {
+            const instContainer = document.getElementById('instrumentContainer');
+            if (!instContainer) return;
+
+            const isAdmin = window.appState.isAdmin;
+            const activeInst = window.appState.activeInstrument;
+
+            let html = `
+                <button onclick="setInstrumentFilter('ALL')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                    activeInst === 'ALL' 
+                    ? 'bg-sky-600 text-white shadow-sm' 
+                    : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }">
+                    全部分類
+                </button>
+            `;
+
+            if (!isAdmin) {
+                html += window.appState.categoryObjects.map(cat => {
+                    const isActive = activeInst === cat.name;
+                    return `
+                        <button onclick="setInstrumentFilter('${escapeQuotes(cat.name)}')" class="px-3 py-1.5 rounded-xl text-xs font-medium transition ${
+                            isActive 
+                            ? 'bg-sky-600 text-white shadow-sm' 
+                            : 'bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }">
+                            ${cat.name}
+                        </button>
+                    `;
+                }).join('');
+            } else {
+                html += window.appState.categoryObjects.map(cat => {
+                    const isActive = activeInst === cat.name;
+                    return `
+                        <div draggable="true" 
+                             ondragstart="handleCatDragStart(event, '${cat.id}')"
+                             ondragover="handleCatDragOver(event)"
+                             ondrop="handleCatDrop(event, '${cat.id}')"
+                             ondragend="handleCatDragEnd(event)"
+                             class="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-grab active:cursor-grabbing border ${
+                                 isActive 
+                                 ? 'bg-sky-600 text-white border-sky-600 shadow-sm' 
+                                 : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                             }">
+                            <i class="fa-solid fa-grip-vertical text-[10px] opacity-40 group-hover:opacity-100 transition"></i>
+                            <span onclick="setInstrumentFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
+                            <button onclick="event.stopPropagation(); promptDeleteCategory('${cat.id}', '${escapeQuotes(cat.name)}')" 
+                                    class="ml-0.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition p-0.5" title="刪除此分類">
+                                <i class="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            instContainer.innerHTML = html;
+        }
+        window.renderFilterControls = renderFilterControls;
+
+        window.handleCatDragStart = function(e, catId) {
+            window.appState.draggedCatId = catId;
+            e.dataTransfer.effectAllowed = 'move';
+        };
+
+        window.handleCatDragOver = function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        };
+
+        window.handleCatDrop = function(e, targetCatId) {
+            e.preventDefault();
+            const draggedId = window.appState.draggedCatId;
+            if (!draggedId || draggedId === targetCatId) return;
+
+            const list = [...window.appState.categoryObjects];
+            const draggedIdx = list.findIndex(c => c.id === draggedId);
+            const targetIdx = list.findIndex(c => c.id === targetCatId);
+
+            if (draggedIdx > -1 && targetIdx > -1) {
+                const [moved] = list.splice(draggedIdx, 1);
+                list.splice(targetIdx, 0, moved);
+                window.appState.categoryObjects = list;
+                window.renderFilterControls();
+                window.firebaseReorderCategories(list);
+            }
+        };
+
+        window.handleCatDragEnd = function() {
+            window.appState.draggedCatId = null;
+        };
+
+        window.promptDeleteCategory = function(catId, catName) {
+            window.appState.pendingDeleteCatId = catId;
+            window.appState.pendingDeleteCatName = catName;
+            const text = document.getElementById('deleteCategoryConfirmText');
+            if (text) text.innerText = `確定要從雲端刪除樂譜分類《${catName}》嗎？`;
+            const modal = document.getElementById('deleteCategoryConfirmModal');
+            if (modal) modal.classList.remove('hidden');
+        };
+
+        window.closeDeleteCategoryConfirmModal = function() {
+            const modal = document.getElementById('deleteCategoryConfirmModal');
+            if (modal) modal.classList.add('hidden');
+            window.appState.pendingDeleteCatId = null;
+            window.appState.pendingDeleteCatName = null;
+        };
+
+        window.executeDeleteCategory = async function() {
+            const catId = window.appState.pendingDeleteCatId;
+            const catName = window.appState.pendingDeleteCatName;
+            if (!catId) return;
+
+            const btn = document.getElementById('confirmDeleteCatBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "刪除中...";
+            }
+
+            const success = await window.firebaseDeleteCategory(catId);
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "確定刪除";
+            }
+            closeDeleteCategoryConfirmModal();
+
+            if (success) {
+                showToast(`已成功刪除分類《${catName}》`, "success");
+                if (window.appState.activeInstrument === catName) {
+                    window.appState.activeInstrument = 'ALL';
+                }
+            }
+        };
+
+        function updateAddInstrumentSelect() {
+            const select = document.getElementById('addInstrument');
+            if (!select) return;
+
+            const options = window.appState.instruments.filter(i => i !== 'ALL');
+            select.innerHTML = options.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+        }
+        window.updateAddInstrumentSelect = updateAddInstrumentSelect;
+
+        window.renderScores = function() {
+            const grid = document.getElementById('scoreGrid');
+            const emptyState = document.getElementById('emptyState');
+            const badge = document.getElementById('resultCountBadge');
+            if (!grid || !emptyState || !badge) return;
+
+            const { scores, activeInstrument, searchQuery, isAdmin } = window.appState;
+
+            const filtered = scores.filter(s => {
+                const q = searchQuery.toLowerCase().trim();
+                const matchQuery = !q || 
+                    (s.title && s.title.toLowerCase().includes(q)) ||
+                    (s.composer && s.composer.toLowerCase().includes(q)) ||
+                    (s.instrument && s.instrument.toLowerCase().includes(q)) ||
+                    (s.tags && s.tags.some(t => t.toLowerCase().includes(q)));
+
+                const matchInst = activeInstrument === 'ALL' || s.instrument === activeInstrument;
+
+                return matchQuery && matchInst;
+            });
+
+            badge.innerText = filtered.length;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(s => {
+                const links = convertDriveUrl(s.driveUrl);
+
+                return `
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/50">
+                                    ${s.instrument || '未指定'}
+                                </span>
+                                ${isAdmin ? `
+                                    <button onclick="promptDelete('${s.id}', '${escapeQuotes(s.title)}')" class="text-slate-300 hover:text-rose-500 transition p-1" title="刪除樂譜">
+                                        <i class="fa-regular fa-trash-can text-xs"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+
+                            <h3 class="font-bold text-base text-slate-800 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition mb-1 line-clamp-1">
+                                ${s.title}
+                            </h3>
+                            <p class="text-xs text-slate-400 mb-3">${s.composer || '未知作曲者'}</p>
+
+                            <div class="flex flex-wrap gap-1 mb-4">
+                                ${(s.tags || []).map(t => `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300">#${t}</span>`).join('')}
+                            </div>
+                        </div>
+
+                        <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-2">
+                            <button onclick="openPreviewModal('${escapeQuotes(s.title)}', '${escapeQuotes(s.composer)}', '${s.driveUrl}')" 
+                                class="flex-1 py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-sky-600 dark:hover:bg-sky-400 dark:hover:text-white text-xs font-medium transition flex items-center justify-center gap-1.5 shadow-sm">
+                                <i class="fa-solid fa-eye"></i>
+                                <span>線上閱覽</span>
+                            </button>
+                            <a href="${links.view}" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition" title="開啟雲端連結">
+                                <i class="fa-brands fa-google-drive text-emerald-500"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        function escapeQuotes(str) {
+            return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        function handleSearch() {
+            window.appState.searchQuery = document.getElementById('searchInput').value;
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (window.appState.searchQuery.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+            window.renderScores();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            window.appState.searchQuery = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            window.renderScores();
+        }
+
+        function setInstrumentFilter(inst) {
+            window.appState.activeInstrument = inst;
+            renderFilterControls();
+            window.renderScores();
+        }
+
+        function resetFilters() {
+            window.appState.activeInstrument = 'ALL';
+            window.appState.searchQuery = '';
+            const input = document.getElementById('searchInput');
+            if (input) input.value = '';
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) clearBtn.classList.add('hidden');
+            renderFilterControls();
+            window.renderScores();
+        }
+
+        function toggleAdminModePrompt() {
+            if (window.appState.isAdmin) {
+                window.appState.isAdmin = false;
+                updateAdminUI();
+                showToast("已切換回閱覽模式", "info");
+            } else {
+                const modal = document.getElementById('adminPasswordModal');
+                if (modal) modal.classList.remove('hidden');
+            }
+        }
+
+        function closeAdminPasswordModal() {
+            const modal = document.getElementById('adminPasswordModal');
+            if (modal) modal.classList.add('hidden');
+            const input = document.getElementById('adminPasswordInput');
+            if (input) input.value = '';
+        }
+
+        function handleAdminLoginSubmit(e) {
+            e.preventDefault();
+            const password = document.getElementById('adminPasswordInput').value;
+            if (password === window.appState.adminPassword) {
+                window.appState.isAdmin = true;
+                updateAdminUI();
+                closeAdminPasswordModal();
+                showToast("解鎖後台管理模式成功！", "success");
+            } else {
+                showToast("密碼錯誤！請重新輸入", "error");
+            }
+        }
+
+        function updateAdminUI() {
+            const isAdmin = window.appState.isAdmin;
+            const btnText = document.getElementById('adminModeText');
+            const btnIcon = document.getElementById('adminModeIcon');
+            const addScoreBtn = document.getElementById('addScoreBtn');
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            const changePasswordBtn = document.getElementById('changePasswordBtn');
+
+            if (isAdmin) {
+                if (btnText) btnText.innerText = "管理模式 (登出)";
+                if (btnIcon) btnIcon.className = "fa-solid fa-lock-open text-emerald-500";
+                if (addScoreBtn) addScoreBtn.classList.remove('hidden');
+                if (addCategoryBtn) addCategoryBtn.classList.remove('hidden');
+                if (changePasswordBtn) changePasswordBtn.classList.remove('hidden');
+            } else {
+                if (btnText) btnText.innerText = "閱覽模式";
+                if (btnIcon) btnIcon.className = "fa-solid fa-lock text-amber-500";
+                if (addScoreBtn) addScoreBtn.classList.add('hidden');
+                if (addCategoryBtn) addCategoryBtn.classList.add('hidden');
+                if (changePasswordBtn) changePasswordBtn.classList.add('hidden');
+            }
+
+            renderFilterControls();
+            window.renderScores();
+        }
+
+        function openChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            if (modal) modal.classList.add('hidden');
+            const oldInput = document.getElementById('oldPasswordInput');
+            const newInput = document.getElementById('newPasswordInput');
+            const confirmInput = document.getElementById('confirmPasswordInput');
+            if (oldInput) oldInput.value = '';
+            if (newInput) newInput.value = '';
+            if (confirmInput) confirmInput.value = '';
+        }
+
+        async function handleChangePasswordSubmit(e) {
+            e.preventDefault();
+            const oldPass = document.getElementById('oldPasswordInput').value;
+            const newPass = document.getElementById('newPasswordInput').value;
+            const confirmPass = document.getElementById('confirmPasswordInput').value;
+
+            if (oldPass !== window.appState.adminPassword) {
+                showToast("舊密碼不正確！", "error");
+                return;
+            }
+
+            if (newPass !== confirmPass) {
+                showToast("兩次輸入的新密碼不一致！", "error");
+                return;
+            }
+
+            if (newPass.trim().length === 0) {
+                showToast("新密碼不可為空！", "error");
+                return;
+            }
+
+            const btn = document.getElementById('submitChangePasswordBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "更新中...";
+            }
+
+            window.appState.adminPassword = newPass;
+            localStorage.setItem('admin_password', newPass);
+
+            if (window.firebaseUpdateAdminPassword) {
+                await window.firebaseUpdateAdminPassword(newPass);
+            }
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "更新密碼";
+            }
+
+            closeChangePasswordModal();
+            showToast("管理員密碼已成功修改並同步！", "success");
+        }
+
+        function openAddCategoryModal() {
+            const modal = document.getElementById('addCategoryModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeAddCategoryModal() {
+            const modal = document.getElementById('addCategoryModal');
+            if (modal) modal.classList.add('hidden');
+            const input = document.getElementById('newCategoryInput');
+            if (input) input.value = '';
+        }
+
+        async function handleAddCategorySubmit(e) {
+            e.preventDefault();
+            const newCat = document.getElementById('newCategoryInput').value.trim();
+            if (!newCat) return;
+
+            const success = await window.firebaseAddCategory(newCat);
+            if (success) {
+                showToast(`成功新增分類《${newCat}》`, "success");
+                closeAddCategoryModal();
+            }
+        }
+
+        function openPreviewModal(title, composer, driveUrl) {
+            const links = convertDriveUrl(driveUrl);
+            const modalTitle = document.getElementById('modalTitle');
+            const modalComposer = document.getElementById('modalComposer');
+            const modalExternalLink = document.getElementById('modalExternalLink');
+            const loader = document.getElementById('iframeLoader');
+            const iframe = document.getElementById('previewIframe');
+
+            if (modalTitle) modalTitle.innerText = title;
+            if (modalComposer) modalComposer.innerText = composer || '';
+            if (modalExternalLink) modalExternalLink.href = links.view;
+
+            if (loader) loader.classList.remove('hidden');
+            if (iframe) {
+                iframe.onload = function() {
+                    window.hideIframeLoader();
+                };
+                iframe.src = links.preview;
+            }
+
+            const modal = document.getElementById('previewModal');
+            if (modal) modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePreviewModal() {
+            const modal = document.getElementById('previewModal');
+            if (modal) modal.classList.add('hidden');
+            const iframe = document.getElementById('previewIframe');
+            if (iframe) {
+                iframe.onload = null;
+                iframe.src = '';
+            }
+            document.body.style.overflow = 'auto';
+        }
+
+        function hideIframeLoader() {
+            const loader = document.getElementById('iframeLoader');
+            if (loader) loader.classList.add('hidden');
+        }
+        window.hideIframeLoader = hideIframeLoader;
+
+        function openAddModal() {
+            const modal = document.getElementById('addModal');
+            if (modal) modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddModal() {
+            const modal = document.getElementById('addModal');
+            if (modal) modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            const form = document.getElementById('addScoreForm');
+            if (form) form.reset();
+        }
+
+        async function handleAddScoreSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitScoreBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "上傳中...";
+            }
+
+            const title = document.getElementById('addTitle').value.trim();
+            const composer = document.getElementById('addComposer').value.trim();
+            const instrument = document.getElementById('addInstrument').value;
+            const tagsRaw = document.getElementById('addTags').value;
+            const driveUrl = document.getElementById('addDriveUrl').value.trim();
+
+            const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [instrument];
+
+            const success = await window.firebaseAddScore({ title, composer, instrument, tags, driveUrl });
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "儲存並同步至雲端";
+            }
+
+            if (success) {
+                showToast("新增樂譜成功，已同步！", "success");
+                closeAddModal();
+            }
+        }
+
+        function promptDelete(id, title) {
+            window.appState.pendingDeleteId = id;
+            const text = document.getElementById('deleteConfirmText');
+            if (text) text.innerText = `確定要從雲端刪除《${title}》嗎？`;
+            const modal = document.getElementById('deleteConfirmModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeDeleteConfirmModal() {
+            const modal = document.getElementById('deleteConfirmModal');
+            if (modal) modal.classList.add('hidden');
+            window.appState.pendingDeleteId = null;
+        }
+
+        async function executeDeleteScore() {
+            const id = window.appState.pendingDeleteId;
+            if (!id) return;
+
+            const btn = document.getElementById('confirmDeleteBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "刪除中...";
+            }
+
+            const success = await window.firebaseDeleteScore(id);
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "確定刪除";
+            }
+            closeDeleteConfirmModal();
+
+            if (success) {
+                showToast("已從雲端移除該樂譜", "success");
+            }
+        }
+
+        function closeRulesModal() {
+            const modal = document.getElementById('rulesWarningModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-slate-800 text-white';
+            if (type === 'success') bg = 'bg-emerald-600 text-white';
+            if (type === 'error') bg = 'bg-rose-600 text-white';
+
+            toast.className = `p-3.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-medium animate-toast pointer-events-auto ${bg}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${msg}</span>`;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        window.showToast = showToast;
+
+        function initDarkMode() {
+            const isDark = localStorage.getItem('theme') === 'dark' || 
+                (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                updateThemeUI(true);
+            } else {
+                document.documentElement.classList.remove('dark');
+                updateThemeUI(false);
+            }
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeUI(isDark);
+        }
+
+        function updateThemeUI(isDark) {
+            const icon = document.getElementById('themeIcon');
+            if (!icon) return;
+            if (isDark) {
+                icon.className = 'fa-solid fa-sun text-amber-400';
+            } else {
+                icon.className = 'fa-solid fa-moon text-indigo-500';
+            }
+        }
+    </script>
+</body>
+</html>
