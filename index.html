@@ -13,13 +13,13 @@
                 extend: {
                     colors: {
                         primary: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            500: '#0284c7',
-                            600: '#0369a1',
-                            700: '#075985',
-                            900: '#0c4a6e',
+                            50: '#fffbe1',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            900: '#78350f',
                         }
                     }
                 }
@@ -64,7 +64,7 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+<body class="bg-amber-50/40 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
@@ -98,16 +98,16 @@ service cloud.firestore {
     </div>
 
     <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
+    <header class="sticky top-0 z-40 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border-b border-amber-200/60 dark:border-slate-800/80 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             
             <!-- Header Left Brand -->
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center text-white shadow-md shadow-amber-500/20">
                     <i class="fa-solid fa-music text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-sky-600 to-indigo-600 dark:from-sky-400 dark:to-indigo-400 bg-clip-text text-transparent">
+                    <h1 class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 dark:from-amber-400 dark:to-orange-400 bg-clip-text text-transparent">
                         道樂樂譜閱覽器
                     </h1>
                     <!-- Firebase Connection Status Indicator -->
@@ -121,24 +121,24 @@ service cloud.firestore {
             <!-- Header Right Controls -->
             <div class="flex items-center space-x-2 sm:space-x-3">
                 <!-- Mode Switch Button -->
-                <button id="adminModeBtn" onclick="toggleAdminModePrompt()" class="flex items-center space-x-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition shadow-sm">
+                <button id="adminModeBtn" onclick="toggleAdminModePrompt()" class="flex items-center space-x-2 px-3 py-2 rounded-xl border border-amber-200/80 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700/60 transition shadow-sm">
                     <i id="adminModeIcon" class="fa-solid fa-lock text-amber-500 text-sm"></i>
                     <span id="adminModeText">閱覽模式</span>
                 </button>
 
                 <!-- Change Password Button (Admin Only) -->
-                <button id="changePasswordBtn" onclick="openChangePasswordModal()" class="hidden flex items-center space-x-2 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition shadow-sm" title="修改管理密碼">
+                <button id="changePasswordBtn" onclick="openChangePasswordModal()" class="hidden flex items-center space-x-2 px-3 py-2 rounded-xl border border-amber-200/80 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700/60 transition shadow-sm" title="修改管理密碼">
                     <i class="fa-solid fa-key text-amber-500 text-sm"></i>
                     <span class="hidden sm:inline">修改密碼</span>
                 </button>
 
                 <!-- Dark Mode Toggle Button -->
-                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition shadow-sm text-base" title="切換深淺模式">
-                    <i id="themeIcon" class="fa-solid fa-moon text-indigo-500 dark:text-amber-400"></i>
+                <button id="themeToggleBtn" onclick="toggleDarkMode()" class="p-2 rounded-xl border border-amber-200/80 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-amber-100/60 dark:hover:bg-slate-700/60 transition shadow-sm text-base" title="切換深淺模式">
+                    <i id="themeIcon" class="fa-solid fa-moon text-amber-600 dark:text-amber-400"></i>
                 </button>
 
                 <!-- Add Score Modal Trigger (Admin Only) -->
-                <button id="addScoreBtn" onclick="openAddModal()" class="hidden flex items-center space-x-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white px-3.5 py-2 rounded-xl font-bold text-sm shadow-md shadow-sky-500/20 transition transform active:scale-95">
+                <button id="addScoreBtn" onclick="openAddModal()" class="hidden flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white px-3.5 py-2 rounded-xl font-bold text-sm shadow-md shadow-amber-500/20 transition transform active:scale-95">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span class="hidden sm:inline">新增樂譜</span>
                 </button>
@@ -150,13 +150,13 @@ service cloud.firestore {
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
         
         <!-- Search & Filter Controls -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-200/80 dark:border-slate-700/80 mb-6 space-y-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-amber-200/60 dark:border-slate-700/80 mb-6 space-y-4">
             
             <!-- Real-time Keyword Search Bar -->
             <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base"></i>
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-amber-500/80 text-base"></i>
                 <input type="text" id="searchInput" oninput="handleSearch()" placeholder="搜尋曲名、大類別或小類別 (例如：卡農、鋼琴、二胡...)" 
-                    class="w-full pl-11 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500 transition text-base font-medium">
+                    class="w-full pl-11 pr-10 py-3 rounded-xl border border-amber-200/80 dark:border-slate-700 bg-amber-50/30 dark:bg-slate-900 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 transition text-base font-medium">
                 <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 text-base">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -167,17 +167,17 @@ service cloud.firestore {
                 <!-- Tier 1: Main Categories Header & Pills -->
                 <div>
                     <div class="flex items-center justify-between mb-2.5">
-                        <span class="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-folder-tree text-sky-500 text-sm"></i>
+                        <span class="text-xs font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-folder-tree text-amber-500 text-sm"></i>
                             <span>樂譜大類別</span>
                         </span>
                         <div class="flex items-center space-x-2">
                             <div id="adminCatActions" class="hidden flex items-center space-x-2">
-                                <button onclick="openAddMainCategoryModal()" class="text-xs text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-1">
+                                <button onclick="openAddMainCategoryModal()" class="text-xs text-amber-700 dark:text-amber-400 font-bold hover:underline flex items-center gap-1">
                                     <i class="fa-solid fa-folder-plus"></i> 新增大類別
                                 </button>
                                 <span class="text-slate-300 dark:text-slate-700">|</span>
-                                <button onclick="openAddSubCategoryModal()" class="text-xs text-sky-600 dark:text-sky-400 font-bold hover:underline flex items-center gap-1">
+                                <button onclick="openAddSubCategoryModal()" class="text-xs text-orange-600 dark:text-orange-400 font-bold hover:underline flex items-center gap-1">
                                     <i class="fa-solid fa-square-plus"></i> 新增小類別
                                 </button>
                             </div>
@@ -192,10 +192,10 @@ service cloud.firestore {
                 </div>
 
                 <!-- Tier 2: Sub Categories Header & Pills (Initially Hidden) -->
-                <div id="subCategorySection" class="hidden pt-2.5 border-t border-slate-100 dark:border-slate-700/60">
+                <div id="subCategorySection" class="hidden pt-2.5 border-t border-amber-100 dark:border-slate-700/60">
                     <div class="flex items-center justify-between mb-2">
-                        <span class="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fa-solid fa-tags text-indigo-400 text-sm"></i>
+                        <span class="text-xs font-bold text-orange-800 dark:text-orange-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-tags text-orange-500 text-sm"></i>
                             <span>樂譜小類別</span>
                         </span>
                     </div>
@@ -205,18 +205,18 @@ service cloud.firestore {
                 </div>
             </div>
 
-            <div class="pt-2 flex justify-end border-t border-slate-100 dark:border-slate-700/40">
+            <div class="pt-2 flex justify-end border-t border-amber-100 dark:border-slate-700/40">
                 <div class="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                    目前展示：<span id="resultCountBadge" class="font-bold text-sky-600 dark:text-sky-400 text-sm">0</span> 首樂譜
+                    目前展示：<span id="resultCountBadge" class="font-bold text-amber-600 dark:text-amber-400 text-sm">0</span> 首樂譜
                 </div>
             </div>
         </div>
 
         <!-- Skeleton Loading Loader -->
         <div id="skeletonLoader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <div class="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
-            <div class="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
-            <div class="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-44 bg-amber-100/50 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-44 bg-amber-100/50 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
+            <div class="h-44 bg-amber-100/50 dark:bg-slate-800 rounded-2xl animate-pulse"></div>
         </div>
 
         <!-- Scores Grid -->
@@ -226,19 +226,19 @@ service cloud.firestore {
 
         <!-- Empty State Container -->
         <div id="emptyState" class="hidden text-center py-12 px-4">
-            <div class="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-400 text-xl">
+            <div class="w-14 h-14 bg-amber-100/60 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 text-amber-500 text-xl">
                 <i class="fa-solid fa-folder-open"></i>
             </div>
             <h3 class="text-base font-bold text-slate-700 dark:text-slate-300">未找到相符的樂譜</h3>
             <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto mb-4">請嘗試更換搜尋關鍵字，或切換至管理模式新增樂譜。</p>
-            <button onclick="resetFilters()" class="px-4 py-2 bg-sky-600 text-white rounded-xl text-xs font-semibold hover:bg-sky-700 transition">
+            <button onclick="resetFilters()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold transition shadow-md shadow-amber-500/20">
                 重設篩選條件
             </button>
         </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-4 mt-8 transition-colors">
+    <footer class="bg-white dark:bg-slate-950 border-t border-amber-200/60 dark:border-slate-800 py-4 mt-8 transition-colors">
         <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 dark:text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
             <div>道樂樂譜閱覽器 &copy; Firebase 實時同步版</div>
             <div>託管於 Google Drive 雲端架構</div>
@@ -269,7 +269,7 @@ service cloud.firestore {
         <div class="max-w-6xl w-full mx-auto flex-1 bg-slate-900 rounded-2xl overflow-hidden shadow-2xl relative flex items-center justify-center border border-slate-800">
             <!-- Iframe Loading Spinner -->
             <div id="iframeLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-10 text-slate-300 text-sm">
-                <div class="w-9 h-9 border-3 border-sky-500 border-t-transparent rounded-full animate-spin mb-2.5"></div>
+                <div class="w-9 h-9 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mb-2.5"></div>
                 <span>正在載入 Google 雲端樂譜...</span>
             </div>
             
@@ -303,10 +303,10 @@ service cloud.firestore {
 
     <!-- 2. Add New Score Modal -->
     <div id="addModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3.5">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-amber-200/80 dark:border-slate-800 space-y-3.5">
             <div class="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-800">
                 <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-cloud-arrow-up text-sky-500 text-lg"></i>
+                    <i class="fa-solid fa-cloud-arrow-up text-amber-500 text-lg"></i>
                     <span>新增雲端樂譜</span>
                 </h3>
                 <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg">
@@ -317,20 +317,20 @@ service cloud.firestore {
             <form id="addScoreForm" onsubmit="handleAddScoreSubmit(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">曲名 <span class="text-rose-500">*</span></label>
-                    <input type="text" id="addTitle" required placeholder="例如：卡農 (Canon in D)" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                    <input type="text" id="addTitle" required placeholder="例如：卡農 (Canon in D)" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
 
                 <!-- Hierarchical Category Selectors -->
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">樂譜大類別 <span class="text-rose-500">*</span></label>
-                        <select id="addMainCategory" required onchange="handleAddMainCategoryChange()" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                        <select id="addMainCategory" required onchange="handleAddMainCategoryChange()" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">樂譜小類別</label>
-                        <select id="addSubCategory" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                        <select id="addSubCategory" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
@@ -338,17 +338,17 @@ service cloud.firestore {
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Google Drive 樂譜連結 <span class="text-rose-500">*</span></label>
-                    <input type="url" id="addDriveUrl" required placeholder="https://drive.google.com/file/d/.../view" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                    <input type="url" id="addDriveUrl" required placeholder="https://drive.google.com/file/d/.../view" class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">YouTube 影片連結 (選填)</label>
-                    <input type="url" id="addYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                    <input type="url" id="addYoutubeUrl" placeholder="https://www.youtube.com/watch?v=..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
 
                 <div class="pt-2 flex justify-end space-x-2 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeAddModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">取消</button>
-                    <button type="submit" id="submitScoreBtn" class="px-4 py-1.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition">
+                    <button type="submit" id="submitScoreBtn" class="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-bold rounded-xl shadow-md transition">
                         儲存並同步至雲端
                     </button>
                 </div>
@@ -358,7 +358,7 @@ service cloud.firestore {
 
     <!-- 2.5 Edit Existing Score Modal -->
     <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3.5">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-5 shadow-2xl border border-amber-200/80 dark:border-slate-800 space-y-3.5">
             <div class="flex justify-between items-center pb-2.5 border-b border-slate-100 dark:border-slate-800">
                 <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <i class="fa-solid fa-pen-to-square text-amber-500 text-lg"></i>
@@ -404,7 +404,7 @@ service cloud.firestore {
 
                 <div class="pt-2 flex justify-end space-x-2 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeEditModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">取消</button>
-                    <button type="submit" id="submitEditScoreBtn" class="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-bold rounded-xl shadow-md transition">
+                    <button type="submit" id="submitEditScoreBtn" class="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white text-xs font-bold rounded-xl shadow-md transition">
                         儲存修改並同步
                     </button>
                 </div>
@@ -448,11 +448,11 @@ service cloud.firestore {
             <form onsubmit="handleAdminLoginSubmit(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">管理密碼</label>
-                    <input type="password" id="adminPasswordInput" required placeholder="請輸入密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="password" id="adminPasswordInput" required placeholder="請輸入密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div class="pt-1 flex justify-end space-x-2">
                     <button type="button" onclick="closeAdminPasswordModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-500">取消</button>
-                    <button type="submit" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition">登入管理模式</button>
+                    <button type="submit" class="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md transition">登入管理模式</button>
                 </div>
             </form>
         </div>
@@ -463,7 +463,7 @@ service cloud.firestore {
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3.5">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
                 <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-folder-plus text-indigo-500 text-base"></i>
+                    <i class="fa-solid fa-folder-plus text-amber-500 text-base"></i>
                     <span>新增樂譜「大類別」</span>
                 </h3>
                 <button onclick="closeAddMainCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg">
@@ -473,11 +473,11 @@ service cloud.firestore {
             <form onsubmit="handleAddMainCategorySubmit(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">大類別名稱</label>
-                    <input type="text" id="newMainCategoryInput" required placeholder="例如：鍵盤樂器、拉弦樂器、合奏..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="text" id="newMainCategoryInput" required placeholder="例如：鍵盤樂器、拉弦樂器、合奏..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div class="pt-1 flex justify-end space-x-2">
                     <button type="button" onclick="closeAddMainCategoryModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-500">取消</button>
-                    <button type="submit" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition">新增大類別</button>
+                    <button type="submit" class="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md transition">新增大類別</button>
                 </div>
             </form>
         </div>
@@ -488,7 +488,7 @@ service cloud.firestore {
         <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3.5">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
                 <h3 class="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-square-plus text-sky-500 text-base"></i>
+                    <i class="fa-solid fa-square-plus text-orange-500 text-base"></i>
                     <span>新增樂譜「小類別」</span>
                 </h3>
                 <button onclick="closeAddSubCategoryModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg">
@@ -498,17 +498,17 @@ service cloud.firestore {
             <form onsubmit="handleAddSubCategorySubmit(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">所屬大類別</label>
-                    <select id="parentMainCategorySelect" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                    <select id="parentMainCategorySelect" required class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                         <!-- Dynamic options -->
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">小類別名稱</label>
-                    <input type="text" id="newSubCategoryInput" required placeholder="例如：鋼琴、二胡、長笛..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-sky-500 outline-none">
+                    <input type="text" id="newSubCategoryInput" required placeholder="例如：鋼琴、二胡、長笛..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-orange-500 outline-none">
                 </div>
                 <div class="pt-1 flex justify-end space-x-2">
                     <button type="button" onclick="closeAddSubCategoryModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-500">取消</button>
-                    <button type="submit" class="px-4 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-md transition">新增小類別</button>
+                    <button type="submit" class="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-md transition">新增小類別</button>
                 </div>
             </form>
         </div>
@@ -550,15 +550,15 @@ service cloud.firestore {
             <form onsubmit="handleChangePasswordSubmit(event)" class="space-y-3.5">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">舊密碼</label>
-                    <input type="password" id="oldPasswordInput" required placeholder="請輸入當前密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="password" id="oldPasswordInput" required placeholder="請輸入當前密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">新密碼</label>
-                    <input type="password" id="newPasswordInput" required placeholder="請輸入新密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="password" id="newPasswordInput" required placeholder="請輸入新密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">確認新密碼</label>
-                    <input type="password" id="confirmPasswordInput" required placeholder="請再次輸入新密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <input type="password" id="confirmPasswordInput" required placeholder="請再次輸入新密碼..." class="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
                 <div class="pt-2 flex justify-end space-x-2 border-t border-slate-100 dark:border-slate-800">
                     <button type="button" onclick="closeChangePasswordModal()" class="px-3.5 py-1.5 text-xs font-medium text-slate-500">取消</button>
@@ -999,12 +999,12 @@ service cloud.firestore {
 
             const { isAdmin, mainCategories, subCategories, activeMainCategory, activeSubCategory } = window.appState;
 
-            // 1. Render Main Categories (Tier 1)
+            // 1. Render Main Categories (Tier 1) - Orange-Yellow theme
             let mainHtml = `
                 <button onclick="setMainCategoryFilter('ALL')" class="px-3.5 py-1.5 rounded-xl text-sm font-bold transition ${
                     activeMainCategory === 'ALL' 
-                    ? 'bg-sky-600 text-white shadow-sm font-bold' 
-                    : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                    ? 'bg-amber-500 text-white shadow-sm font-bold' 
+                    : 'bg-amber-100/60 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-amber-200/80 dark:hover:bg-slate-700'
                 }">
                     全部大類
                 </button>
@@ -1016,8 +1016,8 @@ service cloud.firestore {
                     return `
                         <button onclick="setMainCategoryFilter('${escapeQuotes(cat.name)}')" class="px-3.5 py-1.5 rounded-xl text-sm font-bold transition ${
                             isActive 
-                            ? 'bg-sky-600 text-white shadow-sm font-bold' 
-                            : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-amber-500 text-white shadow-sm font-bold' 
+                            : 'bg-amber-100/60 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-amber-200/80 dark:hover:bg-slate-700'
                         }">
                             ${cat.name}
                         </button>
@@ -1034,8 +1034,8 @@ service cloud.firestore {
                              ondragend="handleCatDragEnd(event)"
                              class="group relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-bold cursor-grab active:cursor-grabbing border ${
                                  isActive 
-                                 ? 'bg-sky-600 text-white border-sky-600 shadow-sm font-bold' 
-                                 : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                 ? 'bg-amber-500 text-white border-amber-500 shadow-sm font-bold' 
+                                 : 'bg-amber-100/60 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-amber-200 dark:border-slate-700 hover:bg-amber-200/80 dark:hover:bg-slate-700'
                              }">
                             <i class="fa-solid fa-grip-vertical text-xs opacity-40 group-hover:opacity-100 transition"></i>
                             <span onclick="setMainCategoryFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
@@ -1072,8 +1072,8 @@ service cloud.firestore {
                     let subHtml = `
                         <button onclick="setSubCategoryFilter('ALL')" class="px-3.5 py-1 rounded-xl text-xs font-bold transition ${
                             activeSubCategory === 'ALL' 
-                            ? 'bg-indigo-600 text-white shadow-sm font-bold' 
-                            : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-orange-500 text-white shadow-sm font-bold' 
+                            : 'bg-orange-100/60 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-orange-200/80 dark:hover:bg-slate-700'
                         }">
                             全部小類
                         </button>
@@ -1085,8 +1085,8 @@ service cloud.firestore {
                             return `
                                 <button onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="px-3.5 py-1 rounded-xl text-xs font-bold transition ${
                                     isActive 
-                                    ? 'bg-indigo-600 text-white shadow-sm font-bold' 
-                                    : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                    ? 'bg-orange-500 text-white shadow-sm font-bold' 
+                                    : 'bg-orange-100/60 dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-orange-200/80 dark:hover:bg-slate-700'
                                 }">
                                     ${cat.name}
                                 </button>
@@ -1103,8 +1103,8 @@ service cloud.firestore {
                                      ondragend="handleCatDragEnd(event)"
                                      class="group relative inline-flex items-center gap-1 px-3 py-1 rounded-xl text-xs font-bold cursor-grab active:cursor-grabbing border ${
                                          isActive 
-                                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm font-bold' 
-                                         : 'bg-slate-100 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                         ? 'bg-orange-500 text-white border-orange-500 shadow-sm font-bold' 
+                                         : 'bg-orange-100/60 dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-orange-200 dark:border-slate-700 hover:bg-orange-200/80 dark:hover:bg-slate-700'
                                      }">
                                     <i class="fa-solid fa-grip-vertical text-xs opacity-40 group-hover:opacity-100 transition"></i>
                                     <span onclick="setSubCategoryFilter('${escapeQuotes(cat.name)}')" class="select-none">${cat.name}</span>
@@ -1337,10 +1337,10 @@ service cloud.firestore {
                 const hasYoutube = s.youtubeUrl && extractYoutubeId(s.youtubeUrl);
 
                 return `
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-200/80 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-amber-200/60 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
                         <div>
                             <div class="flex items-center justify-between mb-3">
-                                <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-sky-50 dark:bg-sky-950/50 text-sky-600 dark:text-sky-400 border border-sky-100 dark:border-sky-900/50">
+                                <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-900/50">
                                     ${displayCategory}
                                 </span>
                                 ${isAdmin ? `
@@ -1355,14 +1355,14 @@ service cloud.firestore {
                                 ` : ''}
                             </div>
 
-                            <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition mb-4 line-clamp-2">
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition mb-4 line-clamp-2">
                                 ${s.title}
                             </h3>
                         </div>
 
-                        <div class="pt-3.5 border-t border-slate-100 dark:border-slate-700/60 flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                        <div class="pt-3.5 border-t border-amber-100 dark:border-slate-700/60 flex items-center gap-2 flex-wrap sm:flex-nowrap">
                             <button onclick="openPreviewModal('${escapeQuotes(s.title)}', '${s.driveUrl}')" 
-                                class="flex-1 min-w-[100px] py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-sky-600 dark:hover:bg-sky-400 dark:hover:text-white text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+                                class="flex-1 min-w-[100px] py-2 rounded-xl bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-amber-500 dark:hover:bg-amber-400 dark:hover:text-white text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-file-pdf text-rose-400 dark:text-rose-500 text-base"></i>
                                 <span>閱覽樂譜</span>
                             </button>
@@ -1375,7 +1375,7 @@ service cloud.firestore {
                                 </button>
                             ` : ''}
 
-                            <a href="${links.view}" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 transition text-base shrink-0" title="開啟雲端連結">
+                            <a href="${links.view}" target="_blank" rel="noopener noreferrer" class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-amber-50 dark:hover:bg-slate-700 text-slate-500 transition text-base shrink-0" title="開啟雲端連結">
                                 <i class="fa-brands fa-google-drive text-emerald-500"></i>
                             </a>
                         </div>
@@ -1861,7 +1861,7 @@ service cloud.firestore {
             if (isDark) {
                 icon.className = 'fa-solid fa-sun text-amber-400';
             } else {
-                icon.className = 'fa-solid fa-moon text-indigo-500';
+                icon.className = 'fa-solid fa-moon text-amber-600';
             }
         }
     </script>
