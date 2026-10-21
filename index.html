@@ -688,8 +688,8 @@ service cloud.firestore {
             onSnapshot(scoresCollectionRef, async (snapshot) => {
                 if (snapshot.empty && !hasSeededScores) {
                     hasSeededScores = true;
-                    for (const score of sampleSeedScores) {
-                        await addDoc(scoresCollectionRef, { ...score, createdAt: Date.now() });
+                    for (let i = 0; i < sampleSeedScores.length; i++) {
+                        await addDoc(scoresCollectionRef, { ...sampleSeedScores[i], order: i, createdAt: Date.now() });
                     }
                     return;
                 }
@@ -699,7 +699,7 @@ service cloud.firestore {
                     list.push({ id: docSnap.id, ...docSnap.data() });
                 });
 
-                list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                list.sort((a, b) => (a.order !== undefined ? a.order : 999) - (b.order !== undefined ? b.order : 999) || (b.createdAt || 0) - (a.createdAt || 0));
 
                 window.appState.scores = list;
                 const skel = document.getElementById('skeletonLoader');
@@ -807,7 +807,8 @@ service cloud.firestore {
         window.firebaseAddScore = async function(data) {
             if (!scoresCollectionRef) return false;
             try {
-                await addDoc(scoresCollectionRef, { ...data, createdAt: Date.now() });
+                const nextOrder = window.appState.scores.length;
+                await addDoc(scoresCollectionRef, { ...data, order: nextOrder, createdAt: Date.now() });
                 return true;
             } catch (err) {
                 console.error("Add score error:", err);
@@ -817,6 +818,23 @@ service cloud.firestore {
                 } else {
                     window.showToast("新增失敗：" + err.message, "error");
                 }
+                return false;
+            }
+        };
+
+        window.firebaseReorderScores = async function(reorderedList) {
+            if (!scoresCollectionRef) return false;
+            try {
+                const batch = writeBatch(db);
+                reorderedList.forEach((score, idx) => {
+                    const ref = doc(db, "scores", score.id);
+                    batch.update(ref, { order: idx });
+                });
+                await batch.commit();
+                return true;
+            } catch (err) {
+                console.error("Reorder scores error:", err);
+                window.showToast("更新樂譜順序失敗：" + err.message, "error");
                 return false;
             }
         };
@@ -958,6 +976,7 @@ service cloud.firestore {
             pendingDeleteCatId: null,
             pendingDeleteCatName: null,
             draggedCatId: null,
+            draggedScoreId: null,
             isAdmin: false,
             adminPassword: localStorage.getItem('admin_password') || '1234'
         };
@@ -1170,6 +1189,40 @@ service cloud.firestore {
             window.appState.draggedCatId = null;
         };
 
+        window.handleScoreDragStart = function(e, scoreId) {
+            window.appState.draggedScoreId = scoreId;
+            e.dataTransfer.effectAllowed = 'move';
+        };
+
+        window.handleScoreDragOver = function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        };
+
+        window.handleScoreDrop = function(e, targetScoreId) {
+            e.preventDefault();
+            const draggedId = window.appState.draggedScoreId;
+            if (!draggedId || draggedId === targetScoreId) return;
+
+            const list = [...window.appState.scores];
+            const draggedIdx = list.findIndex(s => s.id === draggedId);
+            const targetIdx = list.findIndex(s => s.id === targetScoreId);
+
+            if (draggedIdx > -1 && targetIdx > -1) {
+                const [moved] = list.splice(draggedIdx, 1);
+                list.splice(targetIdx, 0, moved);
+                list.forEach((item, idx) => { item.order = idx; });
+                window.appState.scores = list;
+
+                window.renderScores();
+                window.firebaseReorderScores(list);
+            }
+        };
+
+        window.handleScoreDragEnd = function() {
+            window.appState.draggedScoreId = null;
+        };
+
         window.promptDeleteCategory = function(catId, catName, catType) {
             window.appState.pendingDeleteCatId = catId;
             window.appState.pendingDeleteCatName = catName;
@@ -1337,7 +1390,8 @@ service cloud.firestore {
                 const hasYoutube = s.youtubeUrl && extractYoutubeId(s.youtubeUrl);
 
                 return `
-                    <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-amber-200/60 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group">
+                    <div ${isAdmin ? `draggable="true" ondragstart="handleScoreDragStart(event, '${s.id}')" ondragover="handleScoreDragOver(event)" ondrop="handleScoreDrop(event, '${s.id}')" ondragend="handleScoreDragEnd(event)"` : ''} 
+                        class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-amber-200/60 dark:border-slate-700/80 shadow-sm hover:shadow-md transition flex flex-col justify-between group ${isAdmin ? 'cursor-grab active:cursor-grabbing border-dashed hover:border-amber-400' : ''}">
                         <div>
                             <div class="flex items-center justify-between mb-3">
                                 <span class="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200/80 dark:border-amber-900/50">
@@ -1345,6 +1399,9 @@ service cloud.firestore {
                                 </span>
                                 ${isAdmin ? `
                                     <div class="flex items-center space-x-1">
+                                        <span class="text-slate-300 dark:text-slate-600 hover:text-amber-500 transition p-1 text-sm cursor-grab" title="按住拖曳重新排序樂譜">
+                                            <i class="fa-solid fa-grip-vertical"></i>
+                                        </span>
                                         <button onclick="openEditModal('${s.id}')" class="text-slate-400 hover:text-amber-500 transition p-1 text-sm" title="編輯樂譜">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
